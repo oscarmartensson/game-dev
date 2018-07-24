@@ -5,6 +5,7 @@
 // Author:	Oscar Mårtensson
 //-------------------------------------------
 // Log:	    2018-07-01 File created
+//			2018-07-24 Removed unnecessary functions
 //---------------------------------------------------------------------
 #include "Astar.h"
 #include "glut.h"
@@ -14,6 +15,8 @@ Astar a;
 void Display(void){a.Update();}
 void ChangeSize(int w, int h){a.ChangeSize(w, h);}
 
+//---------------------------------------------------------------------
+// Main function
 int main(int argc, char **argv){
 	// Init
 	glutInit(&argc, argv);
