@@ -9,7 +9,6 @@
 //---------------------------------------------------------------------
 #include "Astar.h"
 #include "PriorityQueue.h"
-#include <algorithm>
 
 //---------------------------------------------------------------------
 // Constructor
@@ -92,32 +91,38 @@ void Astar::Draw(void)
 		{
 			if (mGrid[i][j].GetWalkable() == false)
 			{
+				// Dark gray
 				glColor3ub(100, 100, 100);
 			}
 
 			else if ((mGrid[i][j].GetStart() == true) ||
 					 (mGrid[i][j].GetGoal() == true))
 			{
+				// Blue
 				glColor3ub(0, 0, 255);
 			}
 
 			else if (mGrid[i][j].GetPath() == true)
 			{
+				// Light blue
 				glColor3ub(0, 191, 255);
 			}
 
 			else if (mGrid[i][j].GetVisited() == true)
 			{
+				// Red
 				glColor3ub(255, 0, 0);
 			}
 
 			else if (mGrid[i][j].GetNeighbour() == true)
 			{
+				// Green
 				glColor3ub(0, 255, 0);
 			}
 
 			else
 			{
+				// Black
 				glColor3ub(255, 255, 255);
 			}
 			glVertex2f(xCoord, yCoord);
@@ -128,31 +133,6 @@ void Astar::Draw(void)
 	};
 	glEnd(); 
 	glutSwapBuffers();
-}
-
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-void Astar::NormalKeys(unsigned char key, int x, int y){
-	if (key >= '0' && key <= '9'){}
-	if (key == 13){}//Return
-}
-
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-void Astar::SpecialKeys(int key, int x, int y){
-    if (key == GLUT_KEY_LEFT){}
-    if (key == GLUT_KEY_RIGHT){}
-    if (key == GLUT_KEY_UP){}
-    if (key == GLUT_KEY_DOWN){}
-}
-
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-void Astar::Mouse(int button, int state, int x, int y){
-	mMouseButton = button; //GLUT_LEFT_BUTTON/GLUT_MIDDLE_BUTTON/GLUT_RIGHT_BUTTON
-	mMouseState = state; //GLUT_DOWN/GLUT_UP
-	mGlutGetModifiers = glutGetModifiers();
-	mMouseX = x; mMouseY = y;
 }
 
 //---------------------------------------------------------------------
@@ -211,6 +191,7 @@ int Astar::ReceiveAnswers(int validAnswer1, int validAnswer2, int validAnswer3)
 		cin >> answer;
 		if (cin.fail())
 		{
+			// Flush buffer
 			cin.clear();
 			cin.ignore();
 		}
@@ -387,15 +368,15 @@ int Astar::CalcDistance(int xA, int xB, int yA, int yB)
 
 //---------------------------------------------------------------------
 // Retraces the path
-std::vector<Node*> Astar::RetracePath(Node* startNode, Node* endNode)
+std::stack<Node*> Astar::RetracePath(Node* startNode, Node* endNode)
 {
-	std::vector<Node*> path;
+	std::stack<Node*> path;
 	Node* currentNode = endNode;
 
 	while (currentNode != startNode)
 	{
-		// TODD this doesn't properly reverse list, push_back always pushes element to back position, which is wrong. Use other container
-		path.push_back(currentNode);
+		// Insert element on top of stack
+		path.push(currentNode);
 		// Mark for vizualisation
 		currentNode->SetPath(true);
 		currentNode = currentNode->GetParent();

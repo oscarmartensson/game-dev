@@ -12,9 +12,6 @@
 Astar a;
 
 void Display(void){a.Update();}
-void NormalKeys(unsigned char key, int x, int y){a.NormalKeys(key,x,y);}
-void SpecialKeys(int key, int x, int y){a.SpecialKeys(key,x,y);}
-void Mouse(int button, int state, int x, int y){a.Mouse(button, state, x, y);}
 void ChangeSize(int w, int h){a.ChangeSize(w, h);}
 
 int main(int argc, char **argv){
@@ -39,10 +36,6 @@ int main(int argc, char **argv){
 	glClearColor(0.0f, 0.0f, 0.2f, 1.0f);
 	glutDisplayFunc(Display);
 	glutIdleFunc(Display);
-    
-	glutKeyboardFunc(NormalKeys);
-	glutSpecialFunc(SpecialKeys);
-	glutMouseFunc(Mouse);
     
 	// Main
 	glutMainLoop();

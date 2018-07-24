@@ -9,6 +9,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <stack>
 #include "glut.h"
 #include "Node.h"
 
@@ -24,9 +25,6 @@ public:
     //--------------------Graphics-----------------------
 	void ChangeSize(int w, int h);
 	void Draw();
-    void NormalKeys(unsigned char key, int x, int y);
-    void SpecialKeys(int key, int x, int y);
-    void Mouse(int button, int state, int x, int y);
     void Gfx_Text(float x, float y, const char *fmt, ...); //c_str
 	void SearchPath(Node* nodeA, Node* nodeB);
 
@@ -46,7 +44,7 @@ private:
 	Node(*mGrid)[N];
 
 	// Methods
-	std::vector<Node*> RetracePath(Node* startNode, Node* endNode);
+	std::stack<Node*> RetracePath(Node* startNode, Node* endNode);
 	std::vector<Node*> ReturnNeighbours(Node* currentNode);
 	int ReceiveAnswers(int validAnswer1, int validAnswer2, int validAnswer3);
 	int CalcDistance(int xA, int xB, int yA, int yB);
