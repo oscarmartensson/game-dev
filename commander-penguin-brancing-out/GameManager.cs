@@ -10,6 +10,8 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance = null;              //Static instance of GameManager which allows it to be accessed by any other script.
+    public static uint destroyedTrees;
+    public static float timer;
 
     public int nrOfActivePlants = 0;
     public float spawnTimerForPlantsMs;
@@ -18,9 +20,9 @@ public class GameManager : MonoBehaviour
 
     private const float spawnTimerAdjustTimerMs = 1500.0f;  // Spawn timer increased each 1.5 seconds
     private const float maxAllowedPlants        = 6 * 10 - 2;
-    private float surviveCounter;
+    private float surviveTimer;
     private float plantSpawnTimer;
-    private float timer;
+
     private BoardManager boardScript;                       //Store a reference to our BoardManager which will set up the level.
 
     // --------------------------------
@@ -39,11 +41,12 @@ public class GameManager : MonoBehaviour
             //Then destroy this. This enforces our singleton pattern, meaning there can only ever be one instance of a GameManager.
             Destroy(gameObject);
 
+        //Get a component reference to the attached BoardManager script
+        boardScript = GetComponent<BoardManager>();
+
         //Sets this to not be destroyed when reloading scene
         DontDestroyOnLoad(gameObject);
 
-        //Get a component reference to the attached BoardManager script
-        boardScript = GetComponent<BoardManager>();
 
         //Call the InitGame function to initialize the first level 
         InitGame();
@@ -53,21 +56,27 @@ public class GameManager : MonoBehaviour
     // Initializes game parameters
     void InitGame()
     {
+        // Init variables
         timer = 0.0f;
-        surviveCounter = 0.0f;
-        plantSpawnTimer = 0;
+        surviveTimer = 0.0f;
+        plantSpawnTimer = 0.0f;
+        destroyedTrees = 0;
         nrOfActivePlants = 0;
+
         //Call the SetupScene function of the BoardManager script, pass it current level number.
         boardScript.SetupScene();
         UpdateCountText();
     }
 
     // --------------------------------
-    // Game over. Switch scene
+    // Game over. Switch scene and display achieved stats throughout the game
     public void GameOver()
     {
         enabled = false;
         SceneManager.LoadScene("GameOver");
+
+        // Display final stats for the player to see in another location
+        AdjustCanvas();
     }
 
     // --------------------------------
@@ -76,7 +85,7 @@ public class GameManager : MonoBehaviour
     {
         timer += Time.deltaTime * 1000;
         plantSpawnTimer += Time.deltaTime * 1000;
-        surviveCounter += Time.deltaTime;
+        surviveTimer += Time.deltaTime;
         UpdateCountText();
 
         // Decrease the spawn timer for the plants each spawnTimerAdjustTimerMS miliseconds to increase difficulty
@@ -104,6 +113,16 @@ public class GameManager : MonoBehaviour
     // Update the text that displays number of seconds player has survived against the plants for
     void UpdateCountText()
     {
-        counterText.text = "" + surviveCounter.ToString("F") + " seconds survived!";
+        counterText.text = "" + surviveTimer.ToString("F") + " seconds survived! \n" + destroyedTrees.ToString() + " evil plants destroyed!";
+    }
+
+    // --------------------------------
+    // Displays the final achieved stats to the player at the end of the game
+    void AdjustCanvas()
+    {
+        // Save old position and update with new y value
+        Vector3 oldPos = counterText.transform.position;
+        oldPos.y -= 900;
+        counterText.transform.position = oldPos;
     }
 }

@@ -177,8 +177,6 @@ public class BoardManager : MonoBehaviour
     // Destroy trees adjacent to unitPosition (if there are any)
     public void DestroyTrees(Vector3 unitPosition)
     {
-        Debug.Log("message received with player position" + unitPosition.ToString());
-
         foreach (Transform child in boardHolder)
         {
             float distanceToPlant = Vector3.Distance(child.position, unitPosition);
@@ -189,7 +187,9 @@ public class BoardManager : MonoBehaviour
                 int activePlants = GameObject.Find("GameManager").GetComponent<GameManager>().nrOfActivePlants;
                 if (activePlants > 0)
                 {
-                    GameObject.Find("GameManager").GetComponent<GameManager>().nrOfActivePlants--;
+                    GameManager gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+                    gameManager.nrOfActivePlants--;
+                    GameManager.destroyedTrees++; // Note static variable
                 }
 
                 // Add poisítion to list and remove object
