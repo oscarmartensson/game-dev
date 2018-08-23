@@ -18,6 +18,19 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dependencies\includes\Errors.h" />
+    <ClInclude Include="dependencies\includes\MainGame.h" />
+    <ClInclude Include="dependencies\includes\ShaderProgram.h" />
+    <ClInclude Include="dependencies\includes\Sprite.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Errors.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MainGame.cpp" />
+    <ClCompile Include="src\ShaderProgram.cpp" />
+    <ClCompile Include="src\Sprite.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{0FDBF607-4901-4C9F-8677-0AA5E7E4B8ED}</ProjectGuid>
@@ -72,6 +85,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)dependencies/includes/;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)dependencies/libs/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <SourcePath>$(SolutionDir)src/;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -125,13 +139,6 @@ xcopy "$(ProjectDir)dependencies\glew-2.1.0\bin\Release\Win32\glew32.dll" "$(Out
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MainGame.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="MainGame.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

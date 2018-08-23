@@ -1,4 +1,4 @@
-# Visual Studio 2015 cache directory and output folder
-/.vs/
-/Debug/
+# Ignore files in 
+/.vs/**
+/Debug/**
 

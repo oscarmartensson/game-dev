@@ -11,20 +11,16 @@
 /**********************************************************************/
 
 
-// ------------ Includes ------------
-
-
+// Includes -------------------------
 #include "MainGame.h"
 
 // ----------------------------------
 // Main function
 int main(int argc, char** argv) // Argc and argv are needed since the "real" main function reside in the SDL library
 {
+	// Create the main game object and run
 	MainGame mainGame;
 	mainGame.run();
-
-	int a;
-	std::cin >> a;
 
 	return 0;
 }
