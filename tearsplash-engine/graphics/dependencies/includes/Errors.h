@@ -8,4 +8,3 @@
 extern void fatalError(std::string errorString);
 
 #endif // !ERRORS_H
-

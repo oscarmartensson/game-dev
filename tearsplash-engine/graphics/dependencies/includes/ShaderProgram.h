@@ -12,11 +12,14 @@ public:
 	ShaderProgram();
 	~ShaderProgram();
 
+	// Functions
 	void compileShaders(const std::string &vertexShaderFilePath, const std::string &fragmentShaderFilePath);
 	void linkShaders();
 	void addAttribute(const std::string& attributeName);
 	void use();
 	void dontuse();
+
+	GLint getUniformLocation(const std::string& uniformName);
 
 private:
 	int	   mNumAttributes;

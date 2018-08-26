@@ -20,12 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\includes\Errors.h" />
+    <ClInclude Include="dependencies\includes\IOManager.h" />
     <ClInclude Include="dependencies\includes\MainGame.h" />
     <ClInclude Include="dependencies\includes\ShaderProgram.h" />
     <ClInclude Include="dependencies\includes\Sprite.h" />
+    <ClInclude Include="dependencies\includes\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Errors.cpp" />
+    <ClCompile Include="src\IOManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainGame.cpp" />
     <ClCompile Include="src\ShaderProgram.cpp" />

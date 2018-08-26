@@ -12,6 +12,7 @@
 // Includes -------------------------
 #include <SDL/SDL.h>
 #include <iostream>
+#include <cstdlib>
 #include "Errors.h"
 
 // ----------------------------------
@@ -26,5 +27,5 @@ void fatalError(std::string errorString)
 
 	// Shut down SDL and exit system
 	SDL_QUIT;
-	exit(1);
+	exit(1337);
 }

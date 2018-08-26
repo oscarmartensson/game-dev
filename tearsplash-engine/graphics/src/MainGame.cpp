@@ -16,7 +16,7 @@
 
 // ----------------------------------
 // Default constructor
-MainGame::MainGame() : mpWindow(nullptr), mWindowWidth(1280), mWindowHeight(720), mCurrentGameState(GameState::PLAY)
+MainGame::MainGame() : mpWindow(nullptr), mCurrentGameState(GameState::PLAY), mWindowWidth(1280), mWindowHeight(720),  mTime(0.0f)
 {
 	// Initialize member variables through MIL
 }
@@ -34,7 +34,7 @@ void MainGame::run()
 {
 	initSystems();
 
-	mSprite.init(-1.0f, -1.0f, 1.0f, 1.0f);
+	mSprite.init(-1.0f, -1.0f, 2.0f, 2.0f);
 	gameLoop();
 }
 
@@ -62,7 +62,7 @@ void MainGame::initSystems()
 
 	// Init glew
 #ifdef DEBUG
-	glewExperimental = true;	// To counter some errors
+	glewExperimental = true;						// To counter some errors
 #endif
 	GLenum error = glewInit();
 	if (error != GLEW_OK)
@@ -84,8 +84,10 @@ void MainGame::gameLoop()
 	{
 		// Keep looping while player hasn't pressed exit
 		processInput();
+		mTime += .001;
 		render();
 	}
+
 	return;
 }
 
@@ -122,10 +124,17 @@ void MainGame::render()
 	glClearDepth(1.0f);									// Clear depth to 1
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear color buffer and depth buffer between draws
 
+	// Use shader program
 	mColorShaders.use();
 
+	// Set uniforms
+	GLint location = mColorShaders.getUniformLocation("time");
+	glUniform1f(location, mTime);
+
+	// Draw sprite
 	mSprite.draw();
 
+	// Stop using shader program
 	mColorShaders.dontuse();
 
 	SDL_GL_SwapWindow(mpWindow);						// Swap render buffer
@@ -137,7 +146,9 @@ void MainGame::initShaders()
 {
 	mColorShaders.compileShaders("shaders/colorShading.vert", "shaders/colorShading.frag");
 
+	// Setup attribute pointers
 	mColorShaders.addAttribute("vertexPosition");
+	mColorShaders.addAttribute("vertexColor");
 
 	mColorShaders.linkShaders();
 }

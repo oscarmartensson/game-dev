@@ -37,6 +37,7 @@ private:
 	GameState		mCurrentGameState;
 	int				mWindowWidth;
 	int				mWindowHeight;
+	float			mTime;
 	Sprite			mSprite;
 	ShaderProgram	mColorShaders;
 };

@@ -14,6 +14,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <cstdio>
 #include "ShaderProgram.h"
 #include "Errors.h"
 
@@ -97,7 +98,8 @@ void ShaderProgram::linkShaders()
 		glDeleteShader(mFragmentShaderID);
 
 		// Use the infoLog as you see fit.
-		std::string errorMsg = "Failed to link program. Log info: ";//+ infoLog[0];
+		printf("Failed to link program. Log info: %s", &infoLog[0]);
+		std::string errorMsg = "Program failed to link";
 		fatalError(errorMsg);
 	}
 
@@ -158,7 +160,8 @@ void ShaderProgram::compileShader(const std::string& shaderFilePath, GLuint id)
 		// Collect information data from compilation
 		std::vector<GLchar> infoLog(maxLength);
 		glGetShaderInfoLog(id, maxLength, &maxLength, &infoLog[0]);
-		std::string errorMsg = "Failed to compile shader at " + shaderFilePath + ". Log info: ";// +infoLog[0];
+		printf("Failed to link program. Log info: %s", &infoLog[0]);
+		std::string errorMsg = "Failed to compile shader at " + shaderFilePath;
 		glDeleteShader(id);
 		fatalError(errorMsg);
 	}
@@ -194,4 +197,18 @@ void ShaderProgram::dontuse()
 	{
 		glDisableVertexAttribArray(i);
 	}
+}
+
+// ----------------------------------
+// Returns uniform location of variable with name uniformName
+GLint ShaderProgram::getUniformLocation(const std::string& uniformName)
+{
+	GLint location = glGetUniformLocation(mProgramID, uniformName.c_str());
+	if (location == GL_INVALID_INDEX)
+	{
+		// Invalid uniform, report error
+		fatalError("Uniform " + uniformName + " not found in shader!");
+	}
+	
+	return location;
 }

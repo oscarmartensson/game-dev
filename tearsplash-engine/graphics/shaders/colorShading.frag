@@ -1,10 +1,21 @@
 #version 130
 
-out vec3 color;
+// From vertex shader. Important to use same name
+in vec2 position;
+in vec4 color;
+
+// Output
+out vec4 fragmentColor;
+
+// Uniforms
+uniform float time;
 
 // ----------------------------------
 // Main
 void main()
 {
-	color = vec3(1.0, 1.0, 0.0);
+	fragmentColor = vec4(color.r * (cos(position.x + time) + 1.0) * 0.5,
+						 color.g * (cos(position.y + time) + 1.0) * 0.5, 
+						 color.b * (cos(position.y + time) + 1.0) * 0.5, 
+						 1.0);
 }
