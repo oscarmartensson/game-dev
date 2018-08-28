@@ -14,6 +14,7 @@
 #include <iostream>
 #include "Sprite.h"
 #include "ShaderProgram.h"
+#include "GLTexture.h"
 
 enum class GameState { PLAY, EXIT };
 
@@ -40,6 +41,7 @@ private:
 	float			mTime;
 	Sprite			mSprite;
 	ShaderProgram	mColorShaders;
+	GLTexture		mPlayerTexture;
 };
 
 #endif // !MAINGAME_H

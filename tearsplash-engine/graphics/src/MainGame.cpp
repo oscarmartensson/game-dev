@@ -13,6 +13,7 @@
 #include <string>
 #include "MainGame.h"
 #include "Errors.h"
+#include "ImageLoader.h"
 
 // ----------------------------------
 // Default constructor
@@ -35,6 +36,9 @@ void MainGame::run()
 	initSystems();
 
 	mSprite.init(-1.0f, -1.0f, 2.0f, 2.0f);
+
+	mPlayerTexture = ImageLoader::loadPNG("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+
 	gameLoop();
 }
 
@@ -124,8 +128,14 @@ void MainGame::render()
 	glClearDepth(1.0f);									// Clear depth to 1
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear color buffer and depth buffer between draws
 
-	// Use shader program
+	// Use shader program and set first texture (0)
 	mColorShaders.use();
+	glActiveTexture(GL_TEXTURE0);
+
+	// Bind texture to location 0
+	glBindTexture(GL_TEXTURE_2D, mPlayerTexture.id);
+	GLint textureLocation = mColorShaders.getUniformLocation("texSampler");
+	glUniform1i(textureLocation, 0);
 
 	// Set uniforms
 	GLint location = mColorShaders.getUniformLocation("time");
@@ -133,6 +143,9 @@ void MainGame::render()
 
 	// Draw sprite
 	mSprite.draw();
+
+	// Unbind texture
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Stop using shader program
 	mColorShaders.dontuse();
@@ -149,6 +162,7 @@ void MainGame::initShaders()
 	// Setup attribute pointers
 	mColorShaders.addAttribute("vertexPosition");
 	mColorShaders.addAttribute("vertexColor");
+	mColorShaders.addAttribute("vertexUV");
 
 	mColorShaders.linkShaders();
 }
