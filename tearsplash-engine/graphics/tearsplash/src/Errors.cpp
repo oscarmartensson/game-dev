@@ -3,10 +3,11 @@
 // Summary:	This is a utility file which handles errors that come up 
 //			during runtime.
 //
-// Version: Version 1.0 - 2018-08-23
+// Version: Version 1.1 - 2018-09-08
 // Author:	Oscar Mårtensson
 // -------------------------------------------
 // Log:	    2018-08-23 File created
+//			2018-09-08 Updated filed with soft error
 /**********************************************************************/
 
 // Includes -------------------------
@@ -28,4 +29,12 @@ void fatalError(std::string errorString)
 	// Shut down SDL and exit system
 	SDL_QUIT;
 	exit(1337);
+}
+
+// ----------------------------------
+// Takes an error message for a soft
+// non-critical error and displays it
+void softError(std::string errorString)
+{
+	std::cout << errorString << std::endl;
 }

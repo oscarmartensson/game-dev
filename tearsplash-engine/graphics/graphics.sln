@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "graphics", "graphics.vcxproj", "{0FDBF607-4901-4C9F-8677-0AA5E7E4B8ED}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tearsplash", "tearsplash\tearsplash.vcxproj", "{BBB5F171-CD68-474A-B099-0B438415D109}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{0FDBF607-4901-4C9F-8677-0AA5E7E4B8ED}.Release|x64.Build.0 = Release|x64
 		{0FDBF607-4901-4C9F-8677-0AA5E7E4B8ED}.Release|x86.ActiveCfg = Release|Win32
 		{0FDBF607-4901-4C9F-8677-0AA5E7E4B8ED}.Release|x86.Build.0 = Release|Win32
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Debug|x64.ActiveCfg = Debug|x64
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Debug|x64.Build.0 = Debug|x64
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Debug|x86.ActiveCfg = Debug|Win32
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Debug|x86.Build.0 = Debug|Win32
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Release|x64.ActiveCfg = Release|x64
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Release|x64.Build.0 = Release|x64
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Release|x86.ActiveCfg = Release|Win32
+		{BBB5F171-CD68-474A-B099-0B438415D109}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,6 +13,7 @@
 #include <cstddef>
 #include "Sprite.h"
 #include "Vertex.h"
+#include "ResourceManager.h"
 
 // ----------------------------------
 // Default constructor
@@ -35,7 +36,7 @@ Sprite::~Sprite()
 // ----------------------------------
 // Initializes a sprite with position x and y, 
 // and sides width and height. Input in screen coordinates!
-void Sprite::init(float x, float y, float width, float height)
+void Sprite::init(float x, float y, float width, float height, std::string texturePath)
 {
 	mX		= x;
 	mY		= y;
@@ -47,6 +48,9 @@ void Sprite::init(float x, float y, float width, float height)
 	{
 		glGenBuffers(1, &mVboID);	// Generate buffer
 	}
+
+	// Error is handled in function
+	mTexture = ResourceManager::getTexture(texturePath);
 
 	// Screen coordinate space vetex data
 	Vertex vertexData[6];			// 6 vertices for each x and y => 12 total
@@ -89,6 +93,9 @@ void Sprite::init(float x, float y, float width, float height)
 // Draw sprite
 void Sprite::draw()
 {
+	// Bind texture. Don't unbind later since there might be more objects using same texture
+	glBindTexture(GL_TEXTURE_2D, mTexture.id);
+
 	// Bind buffer for drawing
 	glBindBuffer(GL_ARRAY_BUFFER, mVboID);
 	

@@ -11,8 +11,8 @@
 /**********************************************************************/
 
 // Includes -------------------------
-#include "IOManager.h"
 #include "ImageLoader.h"
+#include "IOManager.h"
 #include "PicoPNG.h"
 #include "Errors.h"
 

@@ -9,6 +9,7 @@
 #include <Windows.h>
 #endif //  _WIN32
 
+#include <vector>
 #include <SDL/SDL.h>	// Used for window and input
 #include <GL/glew.h>	// Used for OpenGL
 #include <iostream>
@@ -32,16 +33,20 @@ private:
 	void gameLoop();
 	void processInput();
 	void render();
+	void calcFPS();
+	void printFPS();
 
 	// Member variables
-	SDL_Window*		mpWindow;
-	GameState		mCurrentGameState;
-	int				mWindowWidth;
-	int				mWindowHeight;
-	float			mTime;
-	Sprite			mSprite;
-	ShaderProgram	mColorShaders;
-	GLTexture		mPlayerTexture;
+	SDL_Window*			 mpWindow;
+	GameState			 mCurrentGameState;
+	int					 mWindowWidth;
+	int					 mWindowHeight;
+	float				 mTime;
+	std::vector<Sprite*> mSprites;
+	ShaderProgram		 mColorShaders;
+	float				 mFrameTime;
+	float				 mFPS;
+	float				 mMaxFPS;
 };
 
 #endif // !MAINGAME_H

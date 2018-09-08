@@ -17,7 +17,12 @@
 
 // ----------------------------------
 // Default constructor
-MainGame::MainGame() : mpWindow(nullptr), mCurrentGameState(GameState::PLAY), mWindowWidth(1280), mWindowHeight(720),  mTime(0.0f)
+MainGame::MainGame() : 
+	mpWindow(nullptr), 
+	mCurrentGameState(GameState::PLAY), 
+	mWindowWidth(1280), mWindowHeight(720),  
+	mTime(0.0f), 
+	mMaxFPS(60.0f)
 {
 	// Initialize member variables through MIL
 }
@@ -35,9 +40,11 @@ void MainGame::run()
 {
 	initSystems();
 
-	mSprite.init(-1.0f, -1.0f, 2.0f, 2.0f);
+	mSprites.push_back(new Sprite());
+	mSprites.back()->init(-1.0f, -1.0f, 1.0f, 1.0f, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
-	mPlayerTexture = ImageLoader::loadPNG("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+	mSprites.push_back(new Sprite());
+	mSprites.back()->init(0.0f, -1.0f, 1.0f, 1.0f, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
 	gameLoop();
 }
@@ -49,6 +56,9 @@ void MainGame::initSystems()
 {
 	// Initialize SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
+
+	// Tell OpenGL to use double buffer
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);	
 
 	// Create window
 	mpWindow = SDL_CreateWindow("Tearsplash engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, mWindowWidth, mWindowHeight, SDL_WINDOW_OPENGL);
@@ -74,8 +84,14 @@ void MainGame::initSystems()
 		fatalError("GLEW could not be initialized");
 	}
 
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);	// Tell OpenGL to use double buffer
-	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);			// Clear bg color to blue
+	// Print OpenGL version of system
+	std::printf("--- OpenGL version %s ---\n\n", glGetString(GL_VERSION));
+
+	// Clear bg color to blue
+	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+
+	// Disable vertical sync
+	SDL_GL_SetSwapInterval(0);
 
 	initShaders();
 }
@@ -84,12 +100,24 @@ void MainGame::initSystems()
 // Main game loop.
 void MainGame::gameLoop()
 {
+	// Keep looping while player hasn't pressed exit
 	while (mCurrentGameState != GameState::EXIT)
 	{
-		// Keep looping while player hasn't pressed exit
+		float startTicks = SDL_GetTicks();
 		processInput();
 		mTime += .001;
 		render();
+		calcFPS();
+		printFPS();
+
+		float frameTicks = SDL_GetTicks() - startTicks;
+		float maxFrameTicks = 1000.0f / mMaxFPS;
+
+		// Check if we need to wait
+		if (maxFrameTicks > frameTicks)
+		{
+			SDL_Delay(maxFrameTicks - frameTicks);
+		}
 	}
 
 	return;
@@ -111,7 +139,6 @@ void MainGame::processInput()
 				break;
 
 			case SDL_MOUSEMOTION:
-				std::cout << userInput.motion.x << " " << userInput.motion.y << std::endl;
 
 			default:
 				// Do nothing
@@ -131,9 +158,7 @@ void MainGame::render()
 	// Use shader program and set first texture (0)
 	mColorShaders.use();
 	glActiveTexture(GL_TEXTURE0);
-
-	// Bind texture to location 0
-	glBindTexture(GL_TEXTURE_2D, mPlayerTexture.id);
+;
 	GLint textureLocation = mColorShaders.getUniformLocation("texSampler");
 	glUniform1i(textureLocation, 0);
 
@@ -141,9 +166,12 @@ void MainGame::render()
 	GLint location = mColorShaders.getUniformLocation("time");
 	glUniform1f(location, mTime);
 
-	// Draw sprite
-	mSprite.draw();
-
+	// Draw sprites
+	for (int i = 0; i < mSprites.size(); i++)
+	{
+		mSprites[i]->draw();
+	}
+	
 	// Unbind texture
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -165,4 +193,73 @@ void MainGame::initShaders()
 	mColorShaders.addAttribute("vertexUV");
 
 	mColorShaders.linkShaders();
+}
+
+// ----------------------------------
+// Calculates the engine FPS averaged over NUM_SAMPLES of frames
+void MainGame::calcFPS()
+{
+	static const int	NUM_SAMPLES = 10;
+	static int			currentFrame = 0;
+	static float		frameTimes[NUM_SAMPLES];
+	static float		previousTicks = SDL_GetTicks();
+	float				currentTicks = SDL_GetTicks();
+	float				frameTimeAverages = 0.0f;
+	int count;
+
+	mFrameTime = currentTicks - previousTicks;
+	frameTimes[currentFrame % NUM_SAMPLES] = mFrameTime;
+
+	currentFrame++;
+	if (currentFrame < NUM_SAMPLES)
+	{
+		count = currentFrame;
+	}
+	else
+	{
+		count = NUM_SAMPLES;
+	}
+
+	// Calculate the average frame time
+	frameTimeAverages = 0.0f;
+	for (int i = 0; i < count; i++)
+	{
+		frameTimeAverages += frameTimes[i];
+	}
+
+	// Check for divison-by-zero
+	if (count > 0)
+	{
+		frameTimeAverages /= count;
+	}
+
+	// Check for divison-by-zero
+	if (frameTimeAverages > 0)
+	{
+		// Convert from [f / ms] -> [f / s]
+		mFPS = 1000.0f / frameTimeAverages;
+	}
+	else
+	{
+		softError("FPS counter division by zero.");
+	}
+	
+	// Update ticks
+	previousTicks = currentTicks;
+}
+
+// ----------------------------------
+// Prints fps each 10 frames
+void MainGame::printFPS()
+{
+	static int frameCounter = 0;
+
+	frameCounter++;
+
+	// Print each 10th frame
+	if (frameCounter == 10)
+	{
+		std::cout << "fps: " << mFPS << std::endl;
+		frameCounter = 0;
+	}
 }
