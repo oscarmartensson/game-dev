@@ -6,9 +6,14 @@
 #include "GLTexture.h"
 #include "string"
 
-class ImageLoader
+namespace Tearsplash
 {
-public:
-	static GLTexture loadPNG(const std::string& filePath);
-};
+
+	class ImageLoader
+	{
+	public:
+		static GLTexture loadPNG(const std::string& filePath);
+	};
+
+}
 #endif // !IMAGELOADER_H

@@ -18,6 +18,8 @@
 #include "Tearsplash/ShaderProgram.h"
 #include "Tearsplash/Errors.h"
 
+using namespace Tearsplash;
+
 // ----------------------------------
 // Default constructor
 ShaderProgram::ShaderProgram() : mNumAttributes(0), mProgramID(0), mVertexShaderID(0), mFragmentShaderID(0)

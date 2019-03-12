@@ -11,6 +11,7 @@
 
 // Includes -------------------------
 #include <string>
+
 #include <Tearsplash/Errors.h>
 #include <Tearsplash/ImageLoader.h>
 
@@ -41,10 +42,10 @@ void MainGame::run()
 {
 	initSystems();
 
-	mSprites.push_back(new Sprite());
+	mSprites.push_back(new Tearsplash::Sprite());
 	mSprites.back()->init(-1.0f, -1.0f, 1.0f, 1.0f, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
-	mSprites.push_back(new Sprite());
+	mSprites.push_back(new Tearsplash::Sprite());
 	mSprites.back()->init(0.0f, -1.0f, 1.0f, 1.0f, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
 	gameLoop();
@@ -55,11 +56,7 @@ void MainGame::run()
 // etc.
 void MainGame::initSystems()
 {
-	// Initialize SDL
-	SDL_Init(SDL_INIT_EVERYTHING);
-
-	// Tell OpenGL to use double buffer
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);	
+	Tearsplash::init();
 
 	mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
@@ -211,7 +208,7 @@ void MainGame::calcFPS()
 	}
 	else
 	{
-		softError("FPS counter division by zero.");
+		Tearsplash::softError("FPS counter division by zero.");
 	}
 	
 	// Update ticks

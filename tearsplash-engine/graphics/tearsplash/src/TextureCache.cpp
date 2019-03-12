@@ -12,6 +12,8 @@
 #include "Tearsplash/TextureCache.h"
 #include "Tearsplash/ImageLoader.h"
 
+using namespace Tearsplash;
+
 // ----------------------------------
 // Default constructor
 TextureCache::TextureCache()

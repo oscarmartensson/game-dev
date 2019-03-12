@@ -12,6 +12,8 @@
 #include "Tearsplash/Errors.h"
 #include "Tearsplash/Window.h"
 
+using namespace Tearsplash;
+
 // Constructor
 Window::Window() {}
 

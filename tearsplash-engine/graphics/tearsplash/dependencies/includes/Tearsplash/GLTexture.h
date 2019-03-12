@@ -5,11 +5,16 @@
 
 #include <GL/glew.h>
 
-struct GLTexture
+namespace Tearsplash
 {
-	GLuint id;
-	int width;
-	int height;
-};
+
+	struct GLTexture
+	{
+		GLuint id;
+		int width;
+		int height;
+	};
+
+}
 
 #endif // !GLTEXTURE_H

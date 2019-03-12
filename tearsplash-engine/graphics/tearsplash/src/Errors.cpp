@@ -19,7 +19,7 @@
 // ----------------------------------
 // Takes an error message for fatal error, displays it,
 // and exits the engine and system.
-void fatalError(std::string errorString)
+void Tearsplash::fatalError(std::string errorString)
 {
 	std::cout << errorString << std::endl;
 	std::cout << "Enter any key to exit..." << std::endl;
@@ -34,7 +34,7 @@ void fatalError(std::string errorString)
 // ----------------------------------
 // Takes an error message for a soft
 // non-critical error and displays it
-void softError(std::string errorString)
+void Tearsplash::softError(std::string errorString)
 {
 	std::cout << errorString << std::endl;
 }

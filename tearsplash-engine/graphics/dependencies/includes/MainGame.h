@@ -13,6 +13,7 @@
 #include <SDL/SDL.h>	// Used for window and input
 #include <GL/glew.h>	// Used for OpenGL
 #include <iostream>
+#include <Tearsplash/Tearsplash.h>
 #include <Tearsplash/Sprite.h>
 #include <Tearsplash/ShaderProgram.h>
 #include <Tearsplash/GLTexture.h>
@@ -38,16 +39,16 @@ private:
 	void printFPS();
 
 	// Member variables
-	Window				 mWindow;
-	GameState			 mCurrentGameState;
-	int					 mWindowWidth;
-	int					 mWindowHeight;
-	float				 mTime;
-	std::vector<Sprite*> mSprites;
-	ShaderProgram		 mColorShaders;
-	float				 mFrameTime;
-	float				 mFPS;
-	float				 mMaxFPS;
+	Tearsplash::Window				 mWindow;
+	GameState						 mCurrentGameState;
+	int								 mWindowWidth;
+	int								 mWindowHeight;
+	float							 mTime;
+	std::vector<Tearsplash::Sprite*> mSprites;
+	Tearsplash::ShaderProgram		 mColorShaders;
+	float							 mFrameTime;
+	float							 mFPS;
+	float							 mMaxFPS;
 };
 
 #endif // !MAINGAME_H

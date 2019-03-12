@@ -10,6 +10,8 @@
 
 #include "Tearsplash/ResourceManager.h"
 
+using namespace Tearsplash;
+
 // ----------------------------------
 // Initialize static variables
 TextureCache ResourceManager::mTextureCache{};

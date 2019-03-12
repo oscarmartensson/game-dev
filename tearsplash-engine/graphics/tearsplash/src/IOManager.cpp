@@ -12,6 +12,8 @@
 #include <fstream>
 #include "Tearsplash/IOManager.h"
 
+using namespace Tearsplash;
+
 // ----------------------------------
 // Reads a file at filePath into buffer
 bool IOManager::readFileIntoBuffer(const std::string& filePath, std::vector<unsigned char>& buffer)

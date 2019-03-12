@@ -6,28 +6,33 @@
 #include <string>
 #include <GL/glew.h>
 
-class ShaderProgram
+namespace Tearsplash
 {
-public:
-	ShaderProgram();
-	~ShaderProgram();
 
-	// Functions
-	void compileShaders(const std::string &vertexShaderFilePath, const std::string &fragmentShaderFilePath);
-	void linkShaders();
-	void addAttribute(const std::string& attributeName);
-	void use();
-	void dontuse();
+	class ShaderProgram
+	{
+	public:
+		ShaderProgram();
+		~ShaderProgram();
 
-	GLint getUniformLocation(const std::string& uniformName);
+		// Functions
+		void compileShaders(const std::string &vertexShaderFilePath, const std::string &fragmentShaderFilePath);
+		void linkShaders();
+		void addAttribute(const std::string& attributeName);
+		void use();
+		void dontuse();
 
-private:
-	int	   mNumAttributes;
-	GLuint mProgramID;
-	GLuint mVertexShaderID;
-	GLuint mFragmentShaderID;
+		GLint getUniformLocation(const std::string& uniformName);
 
-	void compileShader(const std::string& shaderFilePath, GLuint id);
-};
+	private:
+		int	   mNumAttributes;
+		GLuint mProgramID;
+		GLuint mVertexShaderID;
+		GLuint mFragmentShaderID;
+
+		void compileShader(const std::string& shaderFilePath, GLuint id);
+	};
+
+}
 
 #endif // !SHADERPROGRAM_H

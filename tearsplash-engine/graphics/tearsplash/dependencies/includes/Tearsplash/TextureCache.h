@@ -5,16 +5,21 @@
 #include <string>
 #include <Tearsplash/GLTexture.h>
 
-class TextureCache
+namespace Tearsplash
 {
-public:
-	TextureCache();
-	~TextureCache();
 
-	GLTexture getTexture(std::string texturePath);
+	class TextureCache
+	{
+	public:
+		TextureCache();
+		~TextureCache();
 
-private:
-	std::map<std::string, GLTexture> mTextureMap;
-};
+		GLTexture getTexture(std::string texturePath);
+
+	private:
+		std::map<std::string, GLTexture> mTextureMap;
+	};
+
+}
 
 #endif // !TEXTURECACHE_H

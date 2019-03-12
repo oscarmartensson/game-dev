@@ -15,6 +15,8 @@
 #include "Tearsplash/Vertex.h"
 #include "Tearsplash/ResourceManager.h"
 
+using namespace Tearsplash;
+
 // ----------------------------------
 // Default constructor
 Sprite::Sprite() : mVboID( (GLuint)0)

@@ -6,11 +6,16 @@
 #include <vector>
 #include <string>
 
-class IOManager
+namespace Tearsplash
 {
-public:
-	static bool readFileIntoBuffer(const std::string& filePath, std::vector<unsigned char>& buffer);
 
-};
+	class IOManager
+	{
+	public:
+		static bool readFileIntoBuffer(const std::string& filePath, std::vector<unsigned char>& buffer);
+
+	};
+
+}
 
 #endif // !IOMANAGER_H

@@ -3,13 +3,18 @@
 
 #include "Tearsplash/TextureCache.h"
 
-class ResourceManager
+namespace Tearsplash
 {
-public:
-	static GLTexture getTexture(std::string texturePath);
-	
-private:
-	static TextureCache mTextureCache;
-};
+
+	class ResourceManager
+	{
+	public:
+		static GLTexture getTexture(std::string texturePath);
+
+	private:
+		static TextureCache mTextureCache;
+	};
+
+}
 
 #endif // !RESOURCEMANAGER_H

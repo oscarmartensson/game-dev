@@ -16,6 +16,8 @@
 #include "Tearsplash/PicoPNG.h"
 #include "Tearsplash/Errors.h"
 
+using namespace Tearsplash;
+
 // ----------------------------------
 // Loads a PNG image at filePath using PicoPNG library decoder. Returns texture.
 GLTexture ImageLoader::loadPNG(const std::string& filePath)

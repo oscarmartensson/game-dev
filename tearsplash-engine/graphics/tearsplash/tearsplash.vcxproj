@@ -175,6 +175,7 @@
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\ShaderProgram.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
+    <ClCompile Include="src\Tearsplash.cpp" />
     <ClCompile Include="src\TextureCache.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
@@ -195,6 +196,7 @@
     <ClInclude Include="dependencies\includes\Tearsplash\ResourceManager.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ShaderProgram.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Sprite.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Tearsplash.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\TextureCache.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Vertex.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Window.h" />
