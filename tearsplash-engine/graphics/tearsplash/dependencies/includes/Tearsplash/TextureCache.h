@@ -3,7 +3,7 @@
 
 #include <map>
 #include <string>
-#include <GLTexture.h>
+#include <Tearsplash/GLTexture.h>
 
 class TextureCache
 {

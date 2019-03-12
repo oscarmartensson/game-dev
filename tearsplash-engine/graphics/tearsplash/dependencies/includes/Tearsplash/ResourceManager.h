@@ -1,9 +1,9 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include "TextureCache.h"
+#include "Tearsplash/TextureCache.h"
 
-static class ResourceManager
+class ResourceManager
 {
 public:
 	static GLTexture getTexture(std::string texturePath);

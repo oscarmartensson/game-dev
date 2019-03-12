@@ -10,7 +10,7 @@
 
 // Includes -------------------------
 #include <fstream>
-#include "IOManager.h"
+#include "Tearsplash/IOManager.h"
 
 // ----------------------------------
 // Reads a file at filePath into buffer
@@ -26,11 +26,11 @@ bool IOManager::readFileIntoBuffer(const std::string& filePath, std::vector<unsi
 
 	// Figure out file length
 	file.seekg(0, std::ios::end);
-	int fileSize = file.tellg();
+	int fileSize = static_cast<int>(file.tellg());
 	file.seekg(0, std::ios::beg);
 	
 	// Reduce fileSize by any header information contained in file
-	fileSize -= file.tellg();
+	fileSize -= static_cast<int>(file.tellg());
 
 	buffer.resize(fileSize);
 	file.read((char*)&(buffer[0]), fileSize);

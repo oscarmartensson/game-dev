@@ -11,10 +11,10 @@
 /**********************************************************************/
 
 // Includes -------------------------
-#include "ImageLoader.h"
-#include "IOManager.h"
-#include "PicoPNG.h"
-#include "Errors.h"
+#include "Tearsplash/ImageLoader.h"
+#include "Tearsplash/IOManager.h"
+#include "Tearsplash/PicoPNG.h"
+#include "Tearsplash/Errors.h"
 
 // ----------------------------------
 // Loads a PNG image at filePath using PicoPNG library decoder. Returns texture.

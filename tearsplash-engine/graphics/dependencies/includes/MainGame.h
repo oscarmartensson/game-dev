@@ -4,7 +4,7 @@
 #define MAINGAME_H
 
 // ------------ Includes ------------
-#ifdef  _WIN32
+#if defined( _WIN32) || defined(_WIN64)
 // Include for windows if target is windows
 #include <Windows.h>
 #endif //  _WIN32
@@ -13,9 +13,10 @@
 #include <SDL/SDL.h>	// Used for window and input
 #include <GL/glew.h>	// Used for OpenGL
 #include <iostream>
-#include "Sprite.h"
-#include "ShaderProgram.h"
-#include "GLTexture.h"
+#include <Tearsplash/Sprite.h>
+#include <Tearsplash/ShaderProgram.h>
+#include <Tearsplash/GLTexture.h>
+#include <Tearsplash/Window.h>
 
 enum class GameState { PLAY, EXIT };
 
@@ -37,7 +38,7 @@ private:
 	void printFPS();
 
 	// Member variables
-	SDL_Window*			 mpWindow;
+	Window				 mWindow;
 	GameState			 mCurrentGameState;
 	int					 mWindowWidth;
 	int					 mWindowHeight;

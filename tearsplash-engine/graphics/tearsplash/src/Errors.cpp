@@ -14,7 +14,7 @@
 #include <SDL/SDL.h>
 #include <iostream>
 #include <cstdlib>
-#include "Errors.h"
+#include "Tearsplash/Errors.h"
 
 // ----------------------------------
 // Takes an error message for fatal error, displays it,

@@ -23,7 +23,7 @@
     <ProjectGuid>{BBB5F171-CD68-474A-B099-0B438415D109}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tearsplash</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,6 +78,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)tearsplash/dependencies/includes/</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(SolutionDir)tearsplash/dependencies/libs/</LibraryPath>
+    <SourcePath>$(VC_SourcePath);$(SolutionDir)tearsplash/src/</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -116,11 +119,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;SDL2.lib;SDL2main.lib;</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -169,6 +176,7 @@
     <ClCompile Include="src\ShaderProgram.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\TextureCache.cpp" />
+    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\includes\Errors.h" />
@@ -179,6 +187,17 @@
     <ClInclude Include="dependencies\includes\ResourceManager.h" />
     <ClInclude Include="dependencies\includes\ShaderProgram.h" />
     <ClInclude Include="dependencies\includes\Sprite.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Errors.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\GLTexture.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\ImageLoader.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\IOManager.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\PicoPNG.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\ResourceManager.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\ShaderProgram.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Sprite.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\TextureCache.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Vertex.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Window.h" />
     <ClInclude Include="dependencies\includes\TextureCache.h" />
     <ClInclude Include="dependencies\includes\Vertex.h" />
   </ItemGroup>

@@ -5,7 +5,7 @@
 
 #include <string>
 #include <GL/glew.h>
-#include "GLTexture.h"
+#include "Tearsplash/GLTexture.h"
 
 class Sprite
 {

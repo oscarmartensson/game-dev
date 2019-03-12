@@ -9,8 +9,8 @@
 /**********************************************************************/
 
 #include <iostream>
-#include "TextureCache.h"
-#include "ImageLoader.h"
+#include "Tearsplash/TextureCache.h"
+#include "Tearsplash/ImageLoader.h"
 
 // ----------------------------------
 // Default constructor

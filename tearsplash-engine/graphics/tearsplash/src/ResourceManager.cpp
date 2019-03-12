@@ -8,7 +8,7 @@
 // Log:	    2018-08-02 File created
 /**********************************************************************/
 
-#include "ResourceManager.h"
+#include "Tearsplash/ResourceManager.h"
 
 // ----------------------------------
 // Initialize static variables

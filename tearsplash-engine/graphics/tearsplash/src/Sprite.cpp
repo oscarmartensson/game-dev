@@ -11,9 +11,9 @@
 
 // Includes -------------------------
 #include <cstddef>
-#include "Sprite.h"
-#include "Vertex.h"
-#include "ResourceManager.h"
+#include "Tearsplash/Sprite.h"
+#include "Tearsplash/Vertex.h"
+#include "Tearsplash/ResourceManager.h"
 
 // ----------------------------------
 // Default constructor

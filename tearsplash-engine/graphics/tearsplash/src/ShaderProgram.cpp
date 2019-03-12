@@ -15,8 +15,8 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
-#include "ShaderProgram.h"
-#include "Errors.h"
+#include "Tearsplash/ShaderProgram.h"
+#include "Tearsplash/Errors.h"
 
 // ----------------------------------
 // Default constructor
