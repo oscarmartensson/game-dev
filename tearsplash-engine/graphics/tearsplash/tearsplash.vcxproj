@@ -168,6 +168,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera2D.cpp" />
     <ClCompile Include="src\Errors.cpp" />
     <ClCompile Include="src\ImageLoader.cpp" />
     <ClCompile Include="src\IOManager.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="dependencies\includes\ResourceManager.h" />
     <ClInclude Include="dependencies\includes\ShaderProgram.h" />
     <ClInclude Include="dependencies\includes\Sprite.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Camera2D.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Errors.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\GLTexture.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ImageLoader.h" />
