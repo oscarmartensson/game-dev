@@ -43,10 +43,10 @@ void MainGame::run()
 	initSystems();
 
 	mSprites.push_back(new Tearsplash::Sprite());
-	mSprites.back()->init(-1.0f, -1.0f, 1.0f, 1.0f, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+	mSprites.back()->init(0.0f, 0.0f, mWindowWidth * 0.5, mWindowWidth * 0.5, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
 	mSprites.push_back(new Tearsplash::Sprite());
-	mSprites.back()->init(0.0f, -1.0f, 1.0f, 1.0f, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+	mSprites.back()->init(mWindowWidth * 0.5, 0.0f, mWindowWidth * 0.5, mWindowWidth * 0.5, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
 	gameLoop();
 }
@@ -59,6 +59,7 @@ void MainGame::initSystems()
 	Tearsplash::init();
 
 	mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    mCamera.init(mWindowWidth, mWindowHeight);
 
 	initShaders();
 }
@@ -73,6 +74,9 @@ void MainGame::gameLoop()
 		float startTicks = static_cast<float>(SDL_GetTicks());
 		processInput();
 		mTime += .001;
+
+        mCamera.update();
+
 		render();
 		calcFPS();
 		printFPS();
@@ -94,9 +98,11 @@ void MainGame::gameLoop()
 // Processes user input.
 void MainGame::processInput()
 {
+    const float SCALE_SPEED = 0.1;
+
 	SDL_Event userInput;
 
-	while (SDL_PollEvent(&userInput) == (int)1)
+	while (SDL_PollEvent(&userInput) == 1)
 	{
 		// There is a user input present
 		switch (userInput.type)
@@ -106,6 +112,40 @@ void MainGame::processInput()
 				break;
 
 			case SDL_MOUSEMOTION:
+
+            case SDL_KEYDOWN:
+                switch (userInput.key.keysym.sym)
+                {
+                    case SDLK_w:
+                        // NOTE! Camera is moving down, scene moving up
+                        mCamera.setPosition( glm::vec2(0.0, -10.0) + mCamera.getPosition() );
+                        break;
+
+                    case SDLK_s:
+                        // NOTE! Camera is moving up, scene moving down
+                        mCamera.setPosition(glm::vec2(0.0, 10.0) + mCamera.getPosition());
+                        break;
+
+                    case SDLK_a:
+                        // NOTE! Camera is moving right, scene moving left
+                        mCamera.setPosition(glm::vec2(10.0, 0.0) + mCamera.getPosition());
+                        break;
+
+                    case SDLK_d:
+                        // NOTE! Camera is moving left, scene moving right
+                        mCamera.setPosition(glm::vec2(-10.0, 0.0) + mCamera.getPosition());
+                        break;
+
+                    case SDLK_q:
+                        mCamera.setScale(mCamera.getScale() - SCALE_SPEED);
+                        break;
+
+                    case SDLK_e:
+                        mCamera.setScale(mCamera.getScale() + SCALE_SPEED);
+                        break;
+
+
+                }
 
 			default:
 				// Do nothing
@@ -125,13 +165,18 @@ void MainGame::render()
 	// Use shader program and set first texture (0)
 	mColorShaders.use();
 	glActiveTexture(GL_TEXTURE0);
-;
-	GLint textureLocation = mColorShaders.getUniformLocation("texSampler");
-	glUniform1i(textureLocation, 0);
 
-	// Set uniforms
-	GLint location = mColorShaders.getUniformLocation("time");
-	glUniform1f(location, mTime);
+  
+    // Set uniforms
+    GLint textureLocation = mColorShaders.getUniformLocation("texSampler");
+    glUniform1i(textureLocation, 0);
+
+    GLint location = mColorShaders.getUniformLocation("time");
+    glUniform1f(location, mTime);
+
+    GLint pLocation = mColorShaders.getUniformLocation("P");
+    glm::mat4 cameraMatrix = mCamera.getCameraMatrix();
+    glUniformMatrix4fv(pLocation, 1, GL_FALSE, &(cameraMatrix[0][0]));
 
 	// Draw sprites
 	for (int i = 0; i < mSprites.size(); i++)

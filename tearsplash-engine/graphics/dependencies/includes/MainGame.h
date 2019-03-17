@@ -18,6 +18,7 @@
 #include <Tearsplash/ShaderProgram.h>
 #include <Tearsplash/GLTexture.h>
 #include <Tearsplash/Window.h>
+#include <Tearsplash/Camera2D.h>
 
 enum class GameState { PLAY, EXIT };
 
@@ -46,6 +47,7 @@ private:
 	float							 mTime;
 	std::vector<Tearsplash::Sprite*> mSprites;
 	Tearsplash::ShaderProgram		 mColorShaders;
+    Tearsplash::Camera2D             mCamera;
 	float							 mFrameTime;
 	float							 mFPS;
 	float							 mMaxFPS;

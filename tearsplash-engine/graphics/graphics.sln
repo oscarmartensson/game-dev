@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "graphics", "graphics.vcxproj", "{0FDBF607-4901-4C9F-8677-0AA5E7E4B8ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BBB5F171-CD68-474A-B099-0B438415D109} = {BBB5F171-CD68-474A-B099-0B438415D109}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tearsplash", "tearsplash\tearsplash.vcxproj", "{BBB5F171-CD68-474A-B099-0B438415D109}"
 EndProject
