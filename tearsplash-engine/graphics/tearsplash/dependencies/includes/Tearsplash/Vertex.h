@@ -4,6 +4,7 @@
 #define VERTEX_H
 
 #include <cstdint>
+#include <GL/glew.h>
 
 namespace Tearsplash
 {

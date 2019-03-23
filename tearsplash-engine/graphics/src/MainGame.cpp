@@ -14,6 +14,7 @@
 
 #include <Tearsplash/Errors.h>
 #include <Tearsplash/ImageLoader.h>
+#include <Tearsplash/ResourceManager.h>
 
 #include "MainGame.h"
 
@@ -42,12 +43,6 @@ void MainGame::run()
 {
 	initSystems();
 
-	mSprites.push_back(new Tearsplash::Sprite());
-	mSprites.back()->init(0.0f, 0.0f, mWindowWidth * 0.5, mWindowWidth * 0.5, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
-
-	mSprites.push_back(new Tearsplash::Sprite());
-	mSprites.back()->init(mWindowWidth * 0.5, 0.0f, mWindowWidth * 0.5, mWindowWidth * 0.5, "textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
-
 	gameLoop();
 }
 
@@ -62,6 +57,7 @@ void MainGame::initSystems()
     mCamera.init(mWindowWidth, mWindowHeight);
 
 	initShaders();
+    mSpritebatch.init();
 }
 
 // ----------------------------------
@@ -177,15 +173,28 @@ void MainGame::render()
     GLint pLocation = mColorShaders.getUniformLocation("P");
     glm::mat4 cameraMatrix = mCamera.getCameraMatrix();
     glUniformMatrix4fv(pLocation, 1, GL_FALSE, &(cameraMatrix[0][0]));
-
-	// Draw sprites
-	for (int i = 0; i < mSprites.size(); i++)
-	{
-		mSprites[i]->draw();
-	}
 	
-	// Unbind texture
-	glBindTexture(GL_TEXTURE_2D, 0);
+    // Start filling sprite batches
+    mSpritebatch.begin(Tearsplash::GlyphSortType::TEXTURE);
+
+    glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
+    glm::vec4 pos2(50.0f, 0.0f, 50.0f, 50.0f);
+    glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
+    static Tearsplash::GLTexture texture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+    Tearsplash::Color color;
+    color.r = 255;
+    color.g = 255;
+    color.b = 255;
+    color.a = 255;
+
+    mSpritebatch.draw(pos, uv, texture.id, 0.0f, color);
+    mSpritebatch.draw(pos2, uv, texture.id, 0.0f, color);
+
+    // Stop filling sprite batches
+    mSpritebatch.end();
+
+    // Render sprite batches
+    mSpritebatch.renderBatch();
 
 	// Stop using shader program
 	mColorShaders.dontuse();
