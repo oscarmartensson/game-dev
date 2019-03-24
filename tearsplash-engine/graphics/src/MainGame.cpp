@@ -7,6 +7,7 @@
 // Author:	Oscar Mårtensson
 // -------------------------------------------
 // Log:	    2018-08-16 File created
+//          2019-03-24 Added timing class and input manager
 /**********************************************************************/
 
 // Includes -------------------------
@@ -25,7 +26,8 @@ MainGame::MainGame() :
 	mCurrentGameState(GameState::PLAY), 
 	mWindowWidth(1280), mWindowHeight(720),  
 	mTime(0.0f), 
-	mMaxFPS(60.0f)
+	mMaxFPS(60.0f),
+    mFPS(0.0f)
 {
 	// Initialize member variables through MIL
 }
@@ -52,6 +54,7 @@ void MainGame::run()
 void MainGame::initSystems()
 {
 	Tearsplash::init();
+    mFPSLimiter.init(mMaxFPS);
 
 	mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
     mCamera.init(mWindowWidth, mWindowHeight);
@@ -67,6 +70,8 @@ void MainGame::gameLoop()
 	// Keep looping while player hasn't pressed exit
 	while (mCurrentGameState != GameState::EXIT)
 	{
+        mFPSLimiter.begin();
+
 		float startTicks = static_cast<float>(SDL_GetTicks());
 		processInput();
 		mTime += .001;
@@ -74,17 +79,10 @@ void MainGame::gameLoop()
         mCamera.update();
 
 		render();
-		calcFPS();
-		printFPS();
 
-		float frameTicks = SDL_GetTicks() - startTicks;
-		float maxFrameTicks = 1000.0f / mMaxFPS;
+        mFPS = mFPSLimiter.end();
 
-		// Check if we need to wait
-		if (maxFrameTicks > frameTicks)
-		{
-			SDL_Delay(maxFrameTicks - frameTicks);
-		}
+        printFPS();
 	}
 
 	return;
@@ -95,6 +93,7 @@ void MainGame::gameLoop()
 void MainGame::processInput()
 {
     const float SCALE_SPEED = 0.1;
+    const float CAMERA_SPEED = 10.0f;
 
 	SDL_Event userInput;
 
@@ -108,46 +107,57 @@ void MainGame::processInput()
 				break;
 
 			case SDL_MOUSEMOTION:
+                break;
 
             case SDL_KEYDOWN:
-                switch (userInput.key.keysym.sym)
-                {
-                    case SDLK_w:
-                        // NOTE! Camera is moving down, scene moving up
-                        mCamera.setPosition( glm::vec2(0.0, -10.0) + mCamera.getPosition() );
-                        break;
+                mInputManager.pressKey(userInput.key.keysym.sym);
+                break;
 
-                    case SDLK_s:
-                        // NOTE! Camera is moving up, scene moving down
-                        mCamera.setPosition(glm::vec2(0.0, 10.0) + mCamera.getPosition());
-                        break;
-
-                    case SDLK_a:
-                        // NOTE! Camera is moving right, scene moving left
-                        mCamera.setPosition(glm::vec2(10.0, 0.0) + mCamera.getPosition());
-                        break;
-
-                    case SDLK_d:
-                        // NOTE! Camera is moving left, scene moving right
-                        mCamera.setPosition(glm::vec2(-10.0, 0.0) + mCamera.getPosition());
-                        break;
-
-                    case SDLK_q:
-                        mCamera.setScale(mCamera.getScale() - SCALE_SPEED);
-                        break;
-
-                    case SDLK_e:
-                        mCamera.setScale(mCamera.getScale() + SCALE_SPEED);
-                        break;
-
-
-                }
+            case SDL_KEYUP:
+                mInputManager.releaseKey(userInput.key.keysym.sym);
+                break;
 
 			default:
 				// Do nothing
 				break;
 		}
 	}
+
+    // Check for key pressed in input manager and add action
+
+    if (mInputManager.isKeyPressed(SDLK_w))
+    {
+        // NOTE! Camera is moving down, scene moving up
+        mCamera.setPosition(mCamera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED));
+    }
+
+    if (mInputManager.isKeyPressed(SDLK_s))
+    {
+        // NOTE! Camera is moving up, scene moving down
+        mCamera.setPosition(mCamera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED));
+    }
+
+    if (mInputManager.isKeyPressed(SDLK_a))
+    {
+        // NOTE! Camera is moving right, scene moving left
+        mCamera.setPosition(mCamera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f));
+    }
+
+    if (mInputManager.isKeyPressed(SDLK_d))
+    {
+        // NOTE! Camera is moving left, scene moving right
+        mCamera.setPosition(mCamera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f));
+    }
+
+    if (mInputManager.isKeyPressed(SDLK_q))
+    {
+        mCamera.setScale(mCamera.getScale() - SCALE_SPEED);
+    }
+
+    if (mInputManager.isKeyPressed(SDLK_e))
+    {
+        mCamera.setScale(mCamera.getScale() + SCALE_SPEED);
+    }
 }
 
 // ----------------------------------
@@ -214,59 +224,6 @@ void MainGame::initShaders()
 	mColorShaders.addAttribute("vertexUV");
 
 	mColorShaders.linkShaders();
-}
-
-// ----------------------------------
-// Calculates the engine FPS averaged over NUM_SAMPLES of frames
-void MainGame::calcFPS()
-{
-	static const int	NUM_SAMPLES = 10;
-	static int			currentFrame = 0;
-	static float		frameTimes[NUM_SAMPLES];
-	static float		previousTicks = SDL_GetTicks();
-	float				currentTicks = SDL_GetTicks();
-	float				frameTimeAverages = 0.0f;
-	int count;
-
-	mFrameTime = currentTicks - previousTicks;
-	frameTimes[currentFrame % NUM_SAMPLES] = mFrameTime;
-
-	currentFrame++;
-	if (currentFrame < NUM_SAMPLES)
-	{
-		count = currentFrame;
-	}
-	else
-	{
-		count = NUM_SAMPLES;
-	}
-
-	// Calculate the average frame time
-	frameTimeAverages = 0.0f;
-	for (int i = 0; i < count; i++)
-	{
-		frameTimeAverages += frameTimes[i];
-	}
-
-	// Check for divison-by-zero
-	if (count > 0)
-	{
-		frameTimeAverages /= count;
-	}
-
-	// Check for divison-by-zero
-	if (frameTimeAverages > 0)
-	{
-		// Convert from [f / ms] -> [f / s]
-		mFPS = 1000.0f / frameTimeAverages;
-	}
-	else
-	{
-		Tearsplash::softError("FPS counter division by zero.");
-	}
-	
-	// Update ticks
-	previousTicks = currentTicks;
 }
 
 // ----------------------------------

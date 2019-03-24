@@ -14,12 +14,13 @@
 #include <GL/glew.h>	// Used for OpenGL
 #include <iostream>
 #include <Tearsplash/Tearsplash.h>
-#include <Tearsplash/Sprite.h>
 #include <Tearsplash/ShaderProgram.h>
 #include <Tearsplash/GLTexture.h>
 #include <Tearsplash/Window.h>
 #include <Tearsplash/Camera2D.h>
 #include <Tearsplash/Spritebatch.h>
+#include <Tearsplash/InputManager.h>
+#include <Tearsplash/Timing.h>
 
 enum class GameState { PLAY, EXIT };
 
@@ -37,17 +38,18 @@ private:
 	void gameLoop();
 	void processInput();
 	void render();
-	void calcFPS();
 	void printFPS();
 
 	// Member variables
+    GameState						 mCurrentGameState;
 	Tearsplash::Window				 mWindow;
-	GameState						 mCurrentGameState;
     Tearsplash::ShaderProgram		 mColorShaders;
     Tearsplash::Camera2D             mCamera;
     Tearsplash::Spritebatch          mSpritebatch;
+    Tearsplash::InputManager         mInputManager;
+    Tearsplash::FPSLimiter           mFPSLimiter;
+
     float							 mTime;
-    float							 mFrameTime;
     float							 mFPS;
     float							 mMaxFPS;
 	int								 mWindowWidth;

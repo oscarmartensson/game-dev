@@ -171,6 +171,7 @@
     <ClCompile Include="src\Camera2D.cpp" />
     <ClCompile Include="src\Errors.cpp" />
     <ClCompile Include="src\ImageLoader.cpp" />
+    <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\IOManager.cpp" />
     <ClCompile Include="src\PicoPNG.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
@@ -179,6 +180,7 @@
     <ClCompile Include="src\Spritebatch.cpp" />
     <ClCompile Include="src\Tearsplash.cpp" />
     <ClCompile Include="src\TextureCache.cpp" />
+    <ClCompile Include="src\Timing.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -194,6 +196,7 @@
     <ClInclude Include="dependencies\includes\Tearsplash\Errors.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\GLTexture.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ImageLoader.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\InputManager.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\IOManager.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\PicoPNG.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ResourceManager.h" />
@@ -202,6 +205,7 @@
     <ClInclude Include="dependencies\includes\Tearsplash\Spritebatch.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Tearsplash.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\TextureCache.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Timing.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Vertex.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Window.h" />
     <ClInclude Include="dependencies\includes\TextureCache.h" />
