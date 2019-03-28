@@ -49,7 +49,6 @@ private:
     Tearsplash::InputManager         mInputManager;
     Tearsplash::FPSLimiter           mFPSLimiter;
 
-    float							 mTime;
     float							 mFPS;
     float							 mMaxFPS;
 	int								 mWindowWidth;

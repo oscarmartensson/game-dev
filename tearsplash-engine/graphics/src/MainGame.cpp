@@ -25,7 +25,6 @@
 MainGame::MainGame() : 
 	mCurrentGameState(GameState::PLAY), 
 	mWindowWidth(1280), mWindowHeight(720),  
-	mTime(0.0f), 
 	mMaxFPS(60.0f),
     mFPS(0.0f)
 {
@@ -74,7 +73,6 @@ void MainGame::gameLoop()
 
 		float startTicks = static_cast<float>(SDL_GetTicks());
 		processInput();
-		mTime += .001;
 
         mCamera.update();
 
@@ -177,8 +175,6 @@ void MainGame::render()
     GLint textureLocation = mColorShaders.getUniformLocation("texSampler");
     glUniform1i(textureLocation, 0);
 
-    GLint location = mColorShaders.getUniformLocation("time");
-    glUniform1f(location, mTime);
 
     GLint pLocation = mColorShaders.getUniformLocation("P");
     glm::mat4 cameraMatrix = mCamera.getCameraMatrix();
