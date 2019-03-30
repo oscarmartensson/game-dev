@@ -18,6 +18,8 @@ namespace Tearsplash
         void init(int screenWidth, int screenHeight);
         void update();
 
+        glm::vec2 convertScreen2World(glm::vec2& screenCoords);
+
         void setPosition(const glm::vec2& position) { mPosition = position; mNeedsMatrixUpdate = true; }
         void setScale(const float scale) { mScale = scale; mNeedsMatrixUpdate = true; }
 

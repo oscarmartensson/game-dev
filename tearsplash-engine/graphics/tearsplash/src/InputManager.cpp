@@ -14,7 +14,7 @@
 
 using namespace Tearsplash;
 
-InputManager::InputManager() {}
+InputManager::InputManager() : mMouseCoords(0.0f) {}
 
 InputManager::~InputManager() {}
 
@@ -40,4 +40,10 @@ bool InputManager::isKeyPressed(unsigned int keyID)
     {
         return false;
     }
+}
+
+void InputManager::setMouseCoords(const float x, const float y)
+{
+    mMouseCoords.x = x;
+    mMouseCoords.y = y;
 }

@@ -47,3 +47,18 @@ void Camera2D::update()
     }
 }
 
+// This function converts screen coordinates to engine world coordinates
+glm::vec2 Camera2D::convertScreen2World(glm::vec2& screenCoords)
+{
+    // Invert Y direction
+    screenCoords.y = mScreenHeight - screenCoords.y;
+    // Convert origin to middle of screen
+    screenCoords -= glm::vec2(mScreenWidth >> 1, mScreenHeight >> 1);
+    // Take zooming (scale) into account
+    screenCoords /= mScale;
+    // Translate
+    screenCoords += mPosition;
+
+    return screenCoords;
+}
+

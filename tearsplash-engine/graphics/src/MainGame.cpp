@@ -76,6 +76,20 @@ void MainGame::gameLoop()
 
         mCamera.update();
 
+        // Update all bullets
+        for (int i = 0; i < mBullets.size();)
+        {
+            if (mBullets[i].update() == true)
+            {
+                mBullets[i] = mBullets.back();
+                mBullets.pop_back();
+            }
+            else
+            {
+                i++;
+            }
+        }
+
 		render();
 
         mFPS = mFPSLimiter.end();
@@ -91,7 +105,7 @@ void MainGame::gameLoop()
 void MainGame::processInput()
 {
     const float SCALE_SPEED = 0.1;
-    const float CAMERA_SPEED = 10.0f;
+    const float CAMERA_SPEED = 5.0f;
 
 	SDL_Event userInput;
 
@@ -105,6 +119,7 @@ void MainGame::processInput()
 				break;
 
 			case SDL_MOUSEMOTION:
+                mInputManager.setMouseCoords(userInput.motion.x, userInput.motion.y);
                 break;
 
             case SDL_KEYDOWN:
@@ -113,6 +128,14 @@ void MainGame::processInput()
 
             case SDL_KEYUP:
                 mInputManager.releaseKey(userInput.key.keysym.sym);
+                break;
+
+            case SDL_MOUSEBUTTONDOWN:
+                mInputManager.pressKey(userInput.button.button);
+                break;
+
+            case SDL_MOUSEBUTTONUP:
+                mInputManager.releaseKey(userInput.button.button);
                 break;
 
 			default:
@@ -156,6 +179,19 @@ void MainGame::processInput()
     {
         mCamera.setScale(mCamera.getScale() + SCALE_SPEED);
     }
+
+    if (mInputManager.isKeyPressed(SDL_BUTTON_LEFT))
+    {
+        glm::vec2 mouseCoords = mInputManager.getMouseCoords();
+        mouseCoords = mCamera.convertScreen2World(mouseCoords);
+        std::cout << mouseCoords.x << " " << mouseCoords.y << std::endl;
+
+        glm::vec2 playerPosition(0.0f);
+        glm::vec2 direction = mouseCoords - playerPosition;
+        direction = glm::normalize(direction);
+
+        mBullets.emplace_back(playerPosition, direction, 10.0f, 1000);
+    }
 }
 
 // ----------------------------------
@@ -184,7 +220,6 @@ void MainGame::render()
     mSpritebatch.begin(Tearsplash::GlyphSortType::TEXTURE);
 
     glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
-    glm::vec4 pos2(50.0f, 0.0f, 50.0f, 50.0f);
     glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
     static Tearsplash::GLTexture texture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
     Tearsplash::Color color;
@@ -194,7 +229,11 @@ void MainGame::render()
     color.a = 255;
 
     mSpritebatch.draw(pos, uv, texture.id, 0.0f, color);
-    mSpritebatch.draw(pos2, uv, texture.id, 0.0f, color);
+
+    for (int i = 0; i < mBullets.size(); i++)
+    {
+        mBullets[i].draw(mSpritebatch);
+    }
 
     // Stop filling sprite batches
     mSpritebatch.end();
@@ -231,7 +270,7 @@ void MainGame::printFPS()
 	frameCounter++;
 
 	// Print each 10th frame
-	if (frameCounter == 10)
+	if (frameCounter == 100000)
 	{
 		std::cout << "fps: " << mFPS << std::endl;
 		frameCounter = 0;

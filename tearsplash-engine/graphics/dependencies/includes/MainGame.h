@@ -9,10 +9,15 @@
 #include <Windows.h>
 #endif //  _WIN32
 
+// STL includes
 #include <vector>
-#include <SDL/SDL.h>	// Used for window and input
-#include <GL/glew.h>	// Used for OpenGL
 #include <iostream>
+
+#include <SDL/SDL.h>	// Used for window and input
+
+#include <GL/glew.h>	// Used for OpenGL
+
+// Tearsplash engine
 #include <Tearsplash/Tearsplash.h>
 #include <Tearsplash/ShaderProgram.h>
 #include <Tearsplash/GLTexture.h>
@@ -21,6 +26,8 @@
 #include <Tearsplash/Spritebatch.h>
 #include <Tearsplash/InputManager.h>
 #include <Tearsplash/Timing.h>
+
+#include "Projectile.h"
 
 enum class GameState { PLAY, EXIT };
 
@@ -48,6 +55,7 @@ private:
     Tearsplash::Spritebatch          mSpritebatch;
     Tearsplash::InputManager         mInputManager;
     Tearsplash::FPSLimiter           mFPSLimiter;
+    std::vector<Projectile>          mBullets;
 
     float							 mFPS;
     float							 mMaxFPS;
