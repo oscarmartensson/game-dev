@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "Vec3.h"
+
 int main() 
 {
     // Create a file and redirect std::cout to the file
@@ -18,12 +20,14 @@ int main()
     {
         for (int i = 0; i < nx; i++)
         {
-            float r = static_cast<float>(i) / static_cast<float>(nx);
-            float g = static_cast<float>(j) / static_cast<float>(ny);
-            float b = 0.2f;
-            int ir = static_cast<int>(255.99 * r);
-            int ig = static_cast<int>(255.99 * g);
-            int ib = static_cast<int>(255.99 * b);
+            Vec3 col(static_cast<float>(i) / static_cast<float>(nx), static_cast<float>(j) / static_cast<float>(ny), 0.2f);
+            //float r = static_cast<float>(i) / static_cast<float>(nx);
+            //float g = static_cast<float>(j) / static_cast<float>(ny);
+            //float b = 0.2f;
+            int ir = static_cast<int>(255.99 * col[0]);
+            int ig = static_cast<int>(255.99 * col[1]);
+            int ib = static_cast<int>(255.99 * col[2]);
+
             std::cout << ir << " " << ig << " " << ib << std::endl;
         }
     }
