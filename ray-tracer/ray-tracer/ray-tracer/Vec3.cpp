@@ -50,37 +50,6 @@ Vec3& Vec3::operator/=(const float t)
     return *this;
 }
 
-
-//inline Vec3 Vec3::operator*(const float t, const Vec3& v)
-//{
-//    e[0] *= t;
-//}
-
-inline Vec3& Vec3::operator/(const float t)
-{
-
-}
-
-inline Vec3& Vec3::operator+(const Vec3& v)
-{
-
-}
-
-inline Vec3& Vec3::operator-(const Vec3& v)
-{
-
-}
-
-inline Vec3& Vec3::operator*(const Vec3& v)
-{
-
-}
-
-inline Vec3& Vec3::operator/(const Vec3& v)
-{
-
-}
-
 inline float Vec3::dot(const Vec3& v) const
 {
     return v[0] * e[0] + v[1] * e[1] + v[2] * e[2];
@@ -105,6 +74,7 @@ inline std::ostream& Vec3::operator<<(std::ostream& os)
     return os;
 }
 
+// Converts the vector to a unit vector (normalized)
 void Vec3::makeUnitVector()
 {
     float k = 1 / length();
