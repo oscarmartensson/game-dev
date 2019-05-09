@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <iostream>
 
-// Description of a 3 element array and opreations that can be performed on it
+// Description of a 3 element array and opperations that can be performed on it
 class Vec3
 {
 public:
     Vec3() { e[0] = 0.0f; e[1] = 0.0f; e[2] = 0.0f; };
-    Vec3(const Vec3& v) { e[0] = v[0]; e[1] = v[1]; e[2] = v[2]; };
+    Vec3(const Vec3& v) { e[0] = v.e[0]; e[1] = v.e[1]; e[2] = v.e[2]; };
     Vec3(const float e0, const float e1, const float e2) { e[0] = e0; e[1] = e1; e[2] = e2; };
     ~Vec3() {};
 
@@ -22,10 +22,10 @@ public:
     inline float g() const { return e[1]; }
     inline float b() const { return e[2]; }
 
-    inline const Vec3& operator+() const { return *this; }
-    inline Vec3 operator-() const { return Vec3(-e[0], -e[1], -e[2]); }
-    inline float operator[](const int i) const { return e[i]; }
-    inline float& operator[](const int i) { return e[i]; }
+    inline const Vec3&  operator+() const { return *this; }
+    inline Vec3         operator-() const { return Vec3(-e[0], -e[1], -e[2]); }
+    inline float        operator[](const int i) const { return e[i]; }
+    inline float&       operator[](const int i) { return e[i]; }
 
     inline Vec3& operator+=(const Vec3& v);
     inline Vec3& operator-=(const Vec3& v);
@@ -34,17 +34,14 @@ public:
     inline Vec3& operator*=(const float t);
     inline Vec3& operator/=(const float t);
 
-    inline float dot(const Vec3& v) const;
-    inline Vec3 cross(const Vec3& v) const;
-
     inline std::istream& operator>>(std::istream& is);
     inline std::ostream& operator<<(std::ostream& is);
 
     inline float length() const {
-        return sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]); // euclidean norm
+        return sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]); // euclidean norm
     }
     inline float squareLength() const {
-        return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
+        return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
     inline void makeUnitVector();
 
@@ -115,7 +112,15 @@ inline Vec3 unitVector(Vec3 v)
 // Dot product between two 3 element vectors
 inline float dot(const Vec3& v1, const Vec3& v2)
 {
-    return v1[0] * v2[0] + v1[1] * v2[1] + v2[2] * v2[2];
+    return v1.e[0]*v2.e[0] + v1.e[1]*v2.e[1] + v1.e[2]*v2.e[2];
+}
+
+// Cross product between two 3 element vectors
+inline Vec3 cross(const Vec3& v1, const Vec3& v2)
+{
+    return Vec3( (v1.e[1] * v2.e[2] - v1.e[2] * v2.e[1]),
+                -(v1.e[0] * v2.e[2] - v1.e[2] * v2.e[0]),
+                 (v1.e[0] * v2.e[1] - v1.e[1] * v2.e[0]) );
 }
 
 #endif // !VEC3_H

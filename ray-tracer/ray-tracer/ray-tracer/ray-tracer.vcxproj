@@ -119,6 +119,7 @@
     <ClCompile Include="Vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Hitable.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="Vec3.h" />
   </ItemGroup>

@@ -1,10 +1,9 @@
 #include "Vec3.h"
 
-
 Vec3& Vec3::operator+=(const Vec3& v) 
 {
     e[0] += v.e[0];
-    e[1] += v.e[2];
+    e[1] += v.e[1];
     e[2] += v.e[2];
     return *this;
 }
@@ -12,7 +11,7 @@ Vec3& Vec3::operator+=(const Vec3& v)
 Vec3& Vec3::operator-=(const Vec3& v)
 {
     e[0] -= v.e[0];
-    e[1] -= v.e[2];
+    e[1] -= v.e[1];
     e[2] -= v.e[2];
     return *this;
 }
@@ -20,7 +19,7 @@ Vec3& Vec3::operator-=(const Vec3& v)
 Vec3& Vec3::operator*=(const Vec3& v)
 {
     e[0] *= v.e[0];
-    e[1] *= v.e[2];
+    e[1] *= v.e[1];
     e[2] *= v.e[2];
     return *this;
 }
@@ -28,7 +27,7 @@ Vec3& Vec3::operator*=(const Vec3& v)
 Vec3& Vec3::operator/=(const Vec3& v)
 {
     e[0] /= v.e[0];
-    e[1] /= v.e[2];
+    e[1] /= v.e[1];
     e[2] /= v.e[2];
     return *this;
 }
@@ -50,18 +49,6 @@ Vec3& Vec3::operator/=(const float t)
     return *this;
 }
 
-inline float Vec3::dot(const Vec3& v) const
-{
-    return v[0] * e[0] + v[1] * e[1] + v[2] * e[2];
-}
-
-inline Vec3 Vec3::cross(const Vec3& v) const
-{
-    return Vec3( (v[1] * e[2] - v[2] * e[1]),
-                -(v[0] * e[2] - v[2] * e[0]),
-                 (v[0] * e[1] - v[1] * e[0]) );
-}
-
 std::istream& Vec3::operator>>(std::istream& is)
 {
     is >> e[0] >> e[1] >> e[2];
@@ -77,7 +64,7 @@ inline std::ostream& Vec3::operator<<(std::ostream& os)
 // Converts the vector to a unit vector (normalized)
 void Vec3::makeUnitVector()
 {
-    float k = 1 / length();
+    float k = 1.0f / length();
     e[0] *= k;
     e[1] *= k;
     e[2] *= k;

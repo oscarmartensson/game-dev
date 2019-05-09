@@ -1,45 +1,72 @@
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 #include "Vec3.h"
 #include "Ray.h"
 
-// Decides if a sphere has been hit by a ray
-// Solve equation :
+// Decides where on a sphere a ray has been hit.
+//
+// Solve equation:
 // dot((A + t*B - C) ,(A + t*B - C)) = R*R
+//
 // This leads to following equation:
 // t*t*dot(B, B) + 2*t*dot(B,A-C) + dot(A-C,A-C) - R*R = 0
-// Solving this with the pq formula puts the constraint on the
-// roots (in the square-root) that ( 2*dot(B,A-C) )^2 - 4 * dot(B, B) * dot(A-C,A-C) > 0
-bool hitSphere(const Vec3& center, float radius, const Ray& r)
+//
+// Solving this with the pq formula:
+// t1 = -p/2 + sqrt( (p/2)^2 - q ) 
+// t2 = -p/2 - sqrt( (p/2)^2 - q )
+// Here, p = 2*dot(B,A-C) / dot(B, B), and q = ( dot(A-C,A-C) - R*R) / dot(B, B)
+//
+// This puts the constraint on the discriminant (in the square-root of the pq formula) that: 
+// sqrt( (p/2)^2 - q ) >= 0 =>
+// ( (2*dot(B,A-C)) / (2 * dot(B, B)) )^2 - ( dot(A-C,A-C) - R*R ) / dot(B, B) >= 0 =>
+// dot(B,A-C) * dot(B,A-C) - dot(B, B) * dot(A-C,A-C) - R*R >= 0
+// for the real solutions, which are the ones we are interested in since non-real solutions means
+// that the sphere was missed.
+float hitSphere(const Vec3& center, float radius, const Ray& r)
 {
     Vec3 oc = r.origin() - center;
-    float a = dot(r.direction(), r.direction());    // dot(B, B)
-    float b = 2.0f * dot(oc, r.direction());        // 2 * dot(B,A-C)
-    float c = dot(oc, oc) - radius * radius;        // dot(A-C,A-C)
-    float solutions = b * b - 4 * a * c;
-    return solutions > 0.0f;
+
+    float p = 2.0f * dot(oc, r.direction()) / dot(r.direction(), r.direction());
+    float q = (dot(oc, oc) - radius * radius) / dot(r.direction(), r.direction());
+    float discriminant = ( (p*p) * 0.25f ) - q;
+
+    if (discriminant < 0)
+    {
+        // No hits on sphere
+        return -1.0;
+    }
+    else
+    {
+        // Sphere was hit
+        return -p * 0.5f - sqrt(discriminant);
+    }
+    
 }
 
 // Returns a color of different objects that were hit with ray
 Vec3 color(const Ray& r)
 {
-    if (hitSphere(Vec3(0, 0, -1), 0.5, r))
+    float t = hitSphere(Vec3(0, 0, -1), 0.5f, r);
+
+    if (t > 0.0f)
     {
-        // Red if sphere was hit with ray
-        return Vec3(1, 0, 0);
+        // If sphere front side (the side with normals pointing towards camera) was hit with rays, calculate normal and interpolate color
+        Vec3 N = unitVector(r.pointAtAbscissa(t) - Vec3(0, 0, 0 -1));
+        return 0.5f * Vec3(N.x() + 1, N.y() + 1, N.z() + 1);
     }
 
     // Background color if no object was hit
     Vec3 unitDir = unitVector(r.direction());
-    float t = 0.5f * (unitDir.y() + 1);
+    t = 0.5f * (unitDir.y() + 1);
     return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
 }
 
 int main() 
 {
     // Create a file and redirect std::cout to the file
-    std::ofstream out("test.ppm");
+    std::ofstream out("scene.ppm");
     std::streambuf *coutbuf = std::cout.rdbuf();
     std::cout.rdbuf(out.rdbuf());
 
@@ -62,7 +89,7 @@ int main()
             // Shoot rays over the scene
             float u = static_cast<float>(i) / static_cast<float>(nx);
             float v = static_cast<float>(j) / static_cast<float>(ny);
-            Ray r(origin, lowerLeftCorner + u * horizontal + v * vertical);
+            Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical);
             Vec3 col = color(r);
 
             int ir = static_cast<int>(255.99 * col[0]);
