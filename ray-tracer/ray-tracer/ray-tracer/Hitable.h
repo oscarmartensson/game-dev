@@ -3,7 +3,7 @@
 
 #include "Ray.h"
 
-struct hitRecord
+struct HitRecord
 {
     float t;
     Vec3  p;
@@ -12,7 +12,7 @@ struct hitRecord
 
 class Hitable {
 public:
-    virtual bool hit(const Ray& r, float tMin, float tMax, hitRecord& record) const = 0;
+    virtual bool hit(const Ray& r, const float tMin, const float tMax, HitRecord& record) const = 0;
 };
 
 #endif // !HITABLE_H
