@@ -1,14 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <limits>
-#include <random>
 
-#include "Vec3.h"
 #include "Ray.h"
-#include "Hitable.h"
 #include "HitableList.h"
 #include "Camera.h"
 #include "Sphere.h"
+#include "Material.h"
 
 // ------Constants------
 const float tolerance = 0.001f; // For getting rid of numerical error causing shadow acne
@@ -20,35 +18,27 @@ const int ny = 100;
 // Anti-aliasing samples
 const int ns = 100;
 
-// Returns a pseudo-random float in range [min, max], normal distributed
-float randomFloat(float min, float max)
-{
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_real_distribution<float> distribution(min, max);
-    return distribution(generator);
-}
 
-// Returns a random point inside a unit sphere (radius = 1)
-Vec3 randomPointInUnitSphere()
-{
-    Vec3 point;
-    do {
-        point = 2.0f * Vec3(randomFloat(0.0f, 0.9999f), randomFloat(0.0f, 0.9999f), randomFloat(0.0f, 0.9999f)) - Vec3(1.0f, 1.0f, 1.0f);
-    } while (point.squareLength() >= 1.0f);
-    return point;
-}
+
 
 // Returns a color of different objects that were hit with ray
-Vec3 color(const Ray& r, Hitable* world)
+Vec3 color(const Ray& r, Hitable* world, const int depth)
 {
     HitRecord record;
     if (world->hit(r, tolerance, FLT_MAX, record))
     {
-        // Create new direction vector for which the ray shall bounce (diffuse material implementation)
-        Vec3 target = record.p + record.normal + randomPointInUnitSphere();
-        // Call the function again recursively with the record point and the new direction coming from diffuse "term"
-        return 0.5f * color( Ray(record.p, target - record.p), world);
+        Ray scattered;
+        Vec3 attenuation;
+        // Check to see what happens with ray depending on material
+        // Set maximum depth to prevent infinite recursiveness
+        if (depth < 50 && record.materialPtr->scatter(r, record, attenuation, scattered))
+        {
+            return attenuation * color(scattered, world, depth + 1);
+        }
+        else
+        {
+            return Vec3(0, 0, 0);
+        }
     }
     else
     {
@@ -68,10 +58,13 @@ int main()
     std::cout << "P3" << std::endl << nx << " " << ny << std::endl << 255 << std::endl;
 
     Camera camera;
-    Hitable* list[2];
-    list[0] = new Sphere(Vec3(0.0f, 0.0f, -1.0f), 0.5f);
-    list[1] = new Sphere(Vec3(0.0f, -100.5f, -1.0f), 100.0f);
-    Hitable* world = new HitableList(list,2);
+    Hitable* list[4];
+    list[0] = new Sphere(Vec3( 0.0f,  0.0f,   -1.0f), 0.5f,   new Lambertian(Vec3(0.8f, 0.3f, 0.3f)));
+    list[1] = new Sphere(Vec3( 0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(Vec3(0.8f, 0.8f, 0.0f)));
+    list[2] = new Sphere(Vec3( 1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.6f, 0.2f)));
+    list[3] = new Sphere(Vec3(-1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.8f, 0.8f)));
+
+    Hitable* world = new HitableList(list,4);
 
     // Write colors to file in the .ppm format
     for (int j = ny - 1; j >= 0; j--) 
@@ -87,7 +80,7 @@ int main()
                 float u = (static_cast<float>(i) + randomFloat(0.0f, 0.99999f)) / static_cast<float>(nx);
                 float v = (static_cast<float>(j) + randomFloat(0.0f, 0.99999f)) / static_cast<float>(ny);
                 Ray r = camera.getRay(u, v);
-                col += color(r, world);
+                col += color(r, world, 0);
             }
             
             col /= static_cast<float>(ns); // Average out since we ran ns more times per pixel to anti-alias

@@ -6,8 +6,8 @@
 class Sphere : public Hitable
 {
 public:
-    Sphere() : center(Vec3(0,0,0)), radius(1.0f) {};
-    Sphere(Vec3 c, float r) : center(c), radius(r) {};
+    Sphere() : center(Vec3(0,0,0)), radius(1.0f), materialPtr(nullptr) {};
+    Sphere(Vec3 c, float r, Material* mat) : center(c), radius(r), materialPtr(mat) {};
     ~Sphere() {};
 
     // Decides where on a sphere a ray has been hit.
@@ -34,6 +34,7 @@ public:
 private:
     Vec3 center;
     float radius;
+    Material* materialPtr;
 };
 
 #endif // !SPHERE_H

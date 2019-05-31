@@ -18,6 +18,7 @@ bool Sphere::hit(const Ray& r, const float tMin, const float tMax, HitRecord& re
             record.t = solution;
             record.p = r.pointAtAbscissa(solution);
             record.normal = (record.p - center) / radius;
+            record.materialPtr = materialPtr;
             return true;
         }
 
@@ -29,6 +30,7 @@ bool Sphere::hit(const Ray& r, const float tMin, const float tMax, HitRecord& re
             record.t = solution;
             record.p = r.pointAtAbscissa(solution);
             record.normal = (record.p - center) / radius;
+            record.materialPtr = materialPtr;
             return true;
         }
     }
