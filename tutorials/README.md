@@ -1,2 +1,2 @@
 All projects in this part stem from tutorials, and are merely here for book keeping and 
-for future reference. Although they have been edited and written by me, the content bulk ideas and content stems from other sources.
+for future reference. Although they have been edited and written by me, the ideas and main content stems from other sources.
