@@ -61,8 +61,8 @@ int main()
     Hitable* list[4];
     list[0] = new Sphere(Vec3( 0.0f,  0.0f,   -1.0f), 0.5f,   new Lambertian(Vec3(0.8f, 0.3f, 0.3f)));
     list[1] = new Sphere(Vec3( 0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(Vec3(0.8f, 0.8f, 0.0f)));
-    list[2] = new Sphere(Vec3( 1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.6f, 0.2f)));
-    list[3] = new Sphere(Vec3(-1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.8f, 0.8f)));
+    list[2] = new Sphere(Vec3( 1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.6f, 0.2f), 0.3f));
+    list[3] = new Sphere(Vec3(-1.0f,  0.0f,   -1.0f), 0.5f,   new Dielectric(1.5));
 
     Hitable* world = new HitableList(list,4);
 
