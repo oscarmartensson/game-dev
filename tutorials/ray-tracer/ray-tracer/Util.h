@@ -6,24 +6,13 @@
 #include "Vec3.h"
 
 // Returns a pseudo-random float in range [min, max], normal distributed
-float randomFloat(float min, float max)
-{
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_real_distribution<float> distribution(min, max);
-    return distribution(generator);
-}
+float randomFloat(float min, float max);
 
 // Returns a random point inside a unit sphere (radius = 1)
-Vec3 randomPointInUnitSphere()
-{
-    Vec3 point;
-    do {
-        point = 2.0f * Vec3(randomFloat(0.0f, 0.9999f), randomFloat(0.0f, 0.9999f), randomFloat(0.0f, 0.9999f)) - Vec3(1.0f, 1.0f, 1.0f);
-    } while (point.squareLength() >= 1.0f);
-    return point;
-}
+Vec3 randomPointInUnitSphere();
 
+// Returns a random point inside a unit disk, where the disk lies in the xy plane.
+Vec3 randomPointInUnitDisk();
 
 #endif // !UTIL_H
 

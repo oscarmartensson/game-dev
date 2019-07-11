@@ -18,8 +18,6 @@ const int ny = 100;
 // Anti-aliasing samples
 const int ns = 100;
 
-//#define CAMERA_TEST
-
 
 // Returns a color of different objects that were hit with ray
 Vec3 color(const Ray& r, Hitable* world, const int depth)
@@ -57,33 +55,23 @@ int main()
     std::cout.rdbuf(out.rdbuf());
     std::cout << "P3" << std::endl << nx << " " << ny << std::endl << 255 << std::endl;
 
-    Vec3 lookFrom =  Vec3(-2.0f, 2.0f, 1.0f);
+    Vec3 lookFrom = Vec3(3.0f, 3.0f, 2.0f);
     Vec3 lookAt = Vec3(0.0f, 0.0f, -1.0f);
     Vec3 upVector = Vec3(0.0f, 1.0f, 0.0f);
     float FOV = 20;
+    float aperture = 2.0f;
+    float distFocus = (lookFrom - lookAt).length();
 
-    Camera camera(lookFrom, lookAt, upVector, FOV, static_cast<float>(nx)/static_cast<float>(ny));
-
-#if defined(CAMERA_TEST)
-
-    // Builds a scene with a red and blue sphere next to each other. Used for testing the camera class.
-    float R = cos(PI_DOUBLE * 0.25);
-    Hitable* list[2];
-    list[0] = new Sphere(Vec3(-R, 0.0f, -1.0f), R, new Lambertian(Vec3(0.0f, 0.0f, 1.0f)));
-    list[1] = new Sphere(Vec3( R, 0.0f, -1.0f), R, new Lambertian(Vec3(1.0f, 0.0f, 0.0f)));
-    Hitable* world = new HitableList(list, 2);
-
-#else // defined(CAMERA_TEST)
+    Camera camera(lookFrom, lookAt, upVector, FOV, static_cast<float>(nx) / static_cast<float>(ny), aperture, distFocus);
 
     // Builds a basic scene with some spheres of different materials and different positions.
     Hitable* list[4];
     list[0] = new Sphere(Vec3( 0.0f,  0.0f,   -1.0f), 0.5f,   new Lambertian(Vec3(0.8f, 0.3f, 0.3f)));
     list[1] = new Sphere(Vec3( 0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(Vec3(0.8f, 0.8f, 0.0f)));
     list[2] = new Sphere(Vec3( 1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.6f, 0.2f), 0.3f));
-    list[3] = new Sphere(Vec3(-1.0f,  0.0f,   -1.0f), 0.5f,   new Dielectric(1.5));
+    list[3] = new Sphere(Vec3(-1.0f,  0.0f,   -1.0f), -0.5f,  new Dielectric(1.5)); // Negative radius makes surface normals point inwards -> glass sphere look-like
     Hitable* world = new HitableList(list,4);
 
-#endif // CAMERA_TEST
 
     // Write colors to file in the .ppm format
     for (int j = ny - 1; j >= 0; j--) 
