@@ -37,7 +37,7 @@ Ray Camera::getRay(const float s, const float t)
     if (mFocusDistance < 0.0f)
     {
         // Depth of field is disabled
-        return Ray(mOrigin, mLowerLeftCorner + u * mHorizontal + v * mVertical - mOrigin);
+        return Ray(mOrigin, mLowerLeftCorner + s * mHorizontal + t * mVertical - mOrigin);
     }
     Vec3 rd = mLensRadius * randomPointInUnitDisk();
     Vec3 offset = u * rd.x() + v * rd.y();
