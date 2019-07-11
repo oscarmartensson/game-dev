@@ -18,7 +18,7 @@ const int ny = 100;
 // Anti-aliasing samples
 const int ns = 100;
 
-#define CAMERA_TEST (1)
+//#define CAMERA_TEST
 
 
 // Returns a color of different objects that were hit with ray
@@ -57,10 +57,16 @@ int main()
     std::cout.rdbuf(out.rdbuf());
     std::cout << "P3" << std::endl << nx << " " << ny << std::endl << 255 << std::endl;
 
-    Camera camera( 90, static_cast<float>(nx)/static_cast<float>(ny));
+    Vec3 lookFrom =  Vec3(-2.0f, 2.0f, 1.0f);
+    Vec3 lookAt = Vec3(0.0f, 0.0f, -1.0f);
+    Vec3 upVector = Vec3(0.0f, 1.0f, 0.0f);
+    float FOV = 20;
+
+    Camera camera(lookFrom, lookAt, upVector, FOV, static_cast<float>(nx)/static_cast<float>(ny));
 
 #if defined(CAMERA_TEST)
 
+    // Builds a scene with a red and blue sphere next to each other. Used for testing the camera class.
     float R = cos(PI_DOUBLE * 0.25);
     Hitable* list[2];
     list[0] = new Sphere(Vec3(-R, 0.0f, -1.0f), R, new Lambertian(Vec3(0.0f, 0.0f, 1.0f)));
@@ -69,6 +75,7 @@ int main()
 
 #else // defined(CAMERA_TEST)
 
+    // Builds a basic scene with some spheres of different materials and different positions.
     Hitable* list[4];
     list[0] = new Sphere(Vec3( 0.0f,  0.0f,   -1.0f), 0.5f,   new Lambertian(Vec3(0.8f, 0.3f, 0.3f)));
     list[1] = new Sphere(Vec3( 0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(Vec3(0.8f, 0.8f, 0.0f)));
