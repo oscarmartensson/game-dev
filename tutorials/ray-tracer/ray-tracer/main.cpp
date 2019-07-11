@@ -18,7 +18,7 @@ const int ny = 100;
 // Anti-aliasing samples
 const int ns = 100;
 
-
+#define CAMERA_TEST (1)
 
 
 // Returns a color of different objects that were hit with ray
@@ -57,14 +57,26 @@ int main()
     std::cout.rdbuf(out.rdbuf());
     std::cout << "P3" << std::endl << nx << " " << ny << std::endl << 255 << std::endl;
 
-    Camera camera;
+    Camera camera( 90, static_cast<float>(nx)/static_cast<float>(ny));
+
+#if defined(CAMERA_TEST)
+
+    float R = cos(PI_DOUBLE * 0.25);
+    Hitable* list[2];
+    list[0] = new Sphere(Vec3(-R, 0.0f, -1.0f), R, new Lambertian(Vec3(0.0f, 0.0f, 1.0f)));
+    list[1] = new Sphere(Vec3( R, 0.0f, -1.0f), R, new Lambertian(Vec3(1.0f, 0.0f, 0.0f)));
+    Hitable* world = new HitableList(list, 2);
+
+#else // defined(CAMERA_TEST)
+
     Hitable* list[4];
     list[0] = new Sphere(Vec3( 0.0f,  0.0f,   -1.0f), 0.5f,   new Lambertian(Vec3(0.8f, 0.3f, 0.3f)));
     list[1] = new Sphere(Vec3( 0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(Vec3(0.8f, 0.8f, 0.0f)));
     list[2] = new Sphere(Vec3( 1.0f,  0.0f,   -1.0f), 0.5f,   new Metal(     Vec3(0.8f, 0.6f, 0.2f), 0.3f));
     list[3] = new Sphere(Vec3(-1.0f,  0.0f,   -1.0f), 0.5f,   new Dielectric(1.5));
-
     Hitable* world = new HitableList(list,4);
+
+#endif // CAMERA_TEST
 
     // Write colors to file in the .ppm format
     for (int j = ny - 1; j >= 0; j--) 
