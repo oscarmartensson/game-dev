@@ -7,8 +7,14 @@ class Sphere : public Hitable
 {
 public:
     Sphere() : center(Vec3(0,0,0)), radius(1.0f), materialPtr(nullptr) {};
-    Sphere(Vec3 c, float r, Material* mat) : center(c), radius(r), materialPtr(mat) {};
-    ~Sphere() {};
+    Sphere(const Vec3 c, const float r, Material* mat) : center(c), radius(r), materialPtr(mat) {};
+    virtual ~Sphere()
+    { 
+        if (materialPtr != nullptr)
+        {
+            delete(materialPtr);
+        }
+    };
 
     // Decides where on a sphere a ray has been hit.
     //
