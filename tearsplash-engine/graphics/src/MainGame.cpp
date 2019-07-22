@@ -77,7 +77,7 @@ void MainGame::gameLoop()
         mCamera.update();
 
         // Update all bullets
-        for (int i = 0; i < mBullets.size();)
+        for (size_t i = 0; i < mBullets.size();)
         {
             if (mBullets[i].update() == true)
             {
@@ -104,7 +104,7 @@ void MainGame::gameLoop()
 // Processes user input.
 void MainGame::processInput()
 {
-    const float SCALE_SPEED = 0.1;
+    const float SCALE_SPEED = 0.1f;
     const float CAMERA_SPEED = 5.0f;
 
 	SDL_Event userInput;
@@ -119,7 +119,7 @@ void MainGame::processInput()
 				break;
 
 			case SDL_MOUSEMOTION:
-                mInputManager.setMouseCoords(userInput.motion.x, userInput.motion.y);
+                mInputManager.setMouseCoords(static_cast<float>(userInput.motion.x), static_cast<float>(userInput.motion.y));
                 break;
 
             case SDL_KEYDOWN:
@@ -228,9 +228,9 @@ void MainGame::render()
     color.b = 255;
     color.a = 255;
 
-    mSpritebatch.draw(pos, uv, texture.id, 0.0f, color);
+    mSpritebatch.draw(pos, uv, texture.id, 0, color);
 
-    for (int i = 0; i < mBullets.size(); i++)
+    for (size_t i = 0; i < mBullets.size(); i++)
     {
         mBullets[i].draw(mSpritebatch);
     }

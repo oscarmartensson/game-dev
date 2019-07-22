@@ -27,7 +27,7 @@ void Projectile::draw(Tearsplash::Spritebatch& spriteBatch)
     color.b = 255;
     color.a = 255;
 
-    spriteBatch.draw(glm::vec4(mPos, 30.0f, 30.0f), uv, texture.id, 0.0f, color);
+    spriteBatch.draw(glm::vec4(mPos, 30.0f, 30.0f), uv, texture.id, 0, color);
 }
 
 bool Projectile::update()
