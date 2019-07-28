@@ -107,6 +107,7 @@ void MainGame::processInput()
     const float SCALE_SPEED = 0.1f;
     const float CAMERA_SPEED = 5.0f;
 
+    mInputManager.update();
 	SDL_Event userInput;
 
 	while (SDL_PollEvent(&userInput) == 1)
@@ -222,7 +223,7 @@ void MainGame::render()
     glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
     glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
     static Tearsplash::GLTexture texture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
-    Tearsplash::Color color;
+    Tearsplash::ColorRGBA8 color;
     color.r = 255;
     color.g = 255;
     color.b = 255;
@@ -270,7 +271,7 @@ void MainGame::printFPS()
 	frameCounter++;
 
 	// Print each 10th frame
-	if (frameCounter == 100000)
+	if (frameCounter == 100)
 	{
 		std::cout << "fps: " << mFPS << std::endl;
 		frameCounter = 0;

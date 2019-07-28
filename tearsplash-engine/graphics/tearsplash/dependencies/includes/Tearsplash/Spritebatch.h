@@ -52,7 +52,7 @@ namespace Tearsplash
         void begin(GlyphSortType sortType = GlyphSortType::TEXTURE);
         void end();
         void renderBatch();
-        void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const Color& color);
+        void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const ColorRGBA8& color);
 
     private:
         void createVertexArray();

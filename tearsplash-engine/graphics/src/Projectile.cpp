@@ -21,7 +21,7 @@ void Projectile::draw(Tearsplash::Spritebatch& spriteBatch)
 {
     glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
     static Tearsplash::GLTexture texture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
-    Tearsplash::Color color;
+    Tearsplash::ColorRGBA8 color;
     color.r = 255;
     color.g = 255;
     color.b = 255;

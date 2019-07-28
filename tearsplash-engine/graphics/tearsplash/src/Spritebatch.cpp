@@ -30,7 +30,7 @@ void Spritebatch::begin(GlyphSortType sortType)
 {
     mSortType = sortType;
     mRenderBatches.clear();
-    for (int i = 0; i < mGlyphs.size(); i++)
+    for (size_t i = 0; i < mGlyphs.size(); i++)
     {
         delete mGlyphs[i];
     }
@@ -43,7 +43,7 @@ void Spritebatch::end()
     createRenderBatches();
 }
 
-void Spritebatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const Color& color)
+void Spritebatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const ColorRGBA8& color)
 {
     Glyph* newGlyph = new Glyph;
     newGlyph->texture = texture;

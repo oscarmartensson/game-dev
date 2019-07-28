@@ -17,8 +17,14 @@ namespace Tearsplash
 	};
 
 	// Color information
-	struct Color
+	struct ColorRGBA8
 	{
+        ColorRGBA8() : r(255), g(0), b(255), a(1) { 
+            // Initialize to Magenta so that the color stands out if not properly set.
+        }
+
+        ColorRGBA8(const GLbyte _r, const GLbyte _g, const GLbyte _b, const GLbyte _a) : r(_r), g(_g), b(_b), a(_a) {}
+
 		uint8_t r;
 		uint8_t g;
 		uint8_t b;
@@ -41,7 +47,7 @@ namespace Tearsplash
 		Position position;
 
 		// Vertex color information
-		Color color;
+        ColorRGBA8 color;
 
 		// Sprite UV information
 		UV uv;

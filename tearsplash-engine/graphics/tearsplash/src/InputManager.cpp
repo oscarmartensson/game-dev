@@ -18,6 +18,15 @@ InputManager::InputManager() : mMouseCoords(0.0f) {}
 
 InputManager::~InputManager() {}
 
+void InputManager::update()
+{
+    for (auto it = mKeyMap.begin(); it != mKeyMap.end(); it++)
+    {
+        // Copies current keyMap to previous
+        mPrevKeyMap[it->first] = it->second;
+    }
+}
+
 void InputManager::pressKey(const unsigned int keyID)
 {
     // First checks if keyID exists, if not, creates new entry
@@ -29,7 +38,7 @@ void InputManager::releaseKey(const unsigned int keyID)
     mKeyMap[keyID] = false;
 }
 
-bool InputManager::isKeyPressed(unsigned int keyID)
+bool InputManager::isKeyDown(const unsigned int keyID)
 {
     auto it = mKeyMap.find(keyID);
     if (it != mKeyMap.end())
@@ -40,6 +49,29 @@ bool InputManager::isKeyPressed(unsigned int keyID)
     {
         return false;
     }
+}
+
+bool InputManager::wasKeyDown(const unsigned int keyID)
+{
+    auto it = mPrevKeyMap.find(keyID);
+    if (it != mPrevKeyMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool InputManager::isKeyPressed(const unsigned int keyID)
+{
+    if (isKeyDown(keyID) && wasKeyDown(keyID))
+    {
+        // Key is pressed
+        return true;
+    }
+    return false;
 }
 
 void InputManager::setMouseCoords(const float x, const float y)
