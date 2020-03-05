@@ -43,7 +43,8 @@ public:
   HelloTriangleApplication() :
     _window( nullptr ),
     _physicalDevice( VK_NULL_HANDLE ),
-    _currentFrame(0) {};
+    _currentFrame(0),
+    _framebufferResized(false) {};
 
   void run() {
     initWindow();
@@ -68,7 +69,13 @@ public:
   };
 
 private:
+
   // Member functions
+
+  static void framebufferResizeCallback( GLFWwindow* window, int width, int height ) {
+    auto app = reinterpret_cast< HelloTriangleApplication* >( glfwGetWindowUserPointer( window ) );
+    app->_framebufferResized = true;
+  }
 
   // Initializes and creates a window to display the graphics in.
   void initWindow() {
@@ -76,9 +83,10 @@ private:
 
     // Tell glfw not to create an OpenGL context, since that's what glfw usually does otherwise.
     glfwWindowHint( GLFW_CLIENT_API, GLFW_NO_API );
-    // Don't resize window now
-    glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
+
     _window = glfwCreateWindow( WIDTH, HEIGHT, "Vulkan", nullptr, nullptr );
+    glfwSetWindowUserPointer( _window, this );
+    glfwSetFramebufferSizeCallback( _window, framebufferResizeCallback );
   };
 
   // Initializes Vulkan
@@ -112,25 +120,18 @@ private:
     // Cleanup Vulkan-related resources create explicitly by the user.
     const VkAllocationCallbacks* allocator = nullptr;
 
-    for( auto framebuffer : _swapChainFramebuffers ) {
-      vkDestroyFramebuffer( _logicalDevice, framebuffer, allocator );
-    }
-    vkDestroyCommandPool( _logicalDevice, _commandPool, allocator );
-    vkDestroyPipeline( _logicalDevice, _graphicsPipeline, allocator );
-    vkDestroyPipelineLayout( _logicalDevice, _pipelineLayout, allocator );
-    vkDestroyRenderPass( _logicalDevice, _renderPass, allocator );
-    vkDestroySwapchainKHR( _logicalDevice, _swapChain, allocator );
-    for( auto imageView : _swapChainImageViews ) {
-      vkDestroyImageView( _logicalDevice, imageView, allocator );
-    }
+    cleanupSwapChain();
+
     for( int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ ) {
       vkDestroySemaphore( _logicalDevice, _renderFinishedSemaphore[i], allocator );
       vkDestroySemaphore( _logicalDevice, _imageAvailableSemaphore[i], allocator );
       vkDestroyFence( _logicalDevice, _inFlightFences[i], allocator );
-      vkDestroyFence( _logicalDevice, _imagesInFlight[i], allocator );
     }
-    vkDestroySurfaceKHR( _instance, _surface, allocator );
+
+    vkDestroyCommandPool( _logicalDevice, _commandPool, nullptr );
+
     vkDestroyDevice( _logicalDevice, allocator );
+    vkDestroySurfaceKHR( _instance, _surface, allocator );
     vkDestroyInstance( _instance, allocator );
 
     // Cleanup glfw things
@@ -440,7 +441,10 @@ private:
       // Use same size as the window.
       return capabilities.currentExtent;
     } else {
-      VkExtent2D actualExtent = { WIDTH, HEIGHT };
+      int width, height;
+      glfwGetFramebufferSize( _window, &width, &height );
+      VkExtent2D actualExtent = { static_cast< uint32_t >( width ),
+                                  static_cast< uint32_t >( height ) };
 
       // Get the min and max values previously specified.
       actualExtent.width = std::max( capabilities.minImageExtent.width, std::min( capabilities.maxImageExtent.width, actualExtent.width ) );
@@ -926,6 +930,8 @@ private:
     
   }
 
+  // Draws the frame and also utilize the synchronization variables in place to make sure more
+  // work isn't sent to the GPU before it is ready to process it.
   void drawFrame() {
     // Wait for previous fences to be signaled
     vkWaitForFences( _logicalDevice, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX );
@@ -934,7 +940,20 @@ private:
     const uint64_t timeout = UINT64_MAX; // in nanoseconds
 
     // Acquires an image from the _logicalDevice and the _swapChain, and assigns the index of it to imageIndex. Also 
-    vkAcquireNextImageKHR( _logicalDevice, _swapChain, timeout, _imageAvailableSemaphore[_currentFrame], VK_NULL_HANDLE /* Initialize to no fence since initially no images are used by the frame */, &imageIndex );
+    VkResult result = vkAcquireNextImageKHR( _logicalDevice,
+                                             _swapChain,
+                                             timeout,
+                                             _imageAvailableSemaphore[_currentFrame],
+                                             VK_NULL_HANDLE /* Initialize to no fence since initially no images are used by the frame */,
+                                             &imageIndex );
+
+    if( result == VK_ERROR_OUT_OF_DATE_KHR ) {
+      // Swap chain is outdated for various reasons (could be window resize). Recreate it.
+      recreateSwapChain();
+      return;
+    } else if( result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR ) {
+      throw std::runtime_error( "Failed to acquire swap chain image" );
+    }
 
     // Check if a previous frame is using this image (i.e. there is a fence to wait on)
     if( _imagesInFlight[imageIndex] != VK_NULL_HANDLE ) {
@@ -979,7 +998,12 @@ private:
     presentInfo.pResults = nullptr; // Optional
 
     // Present image.
-    if( vkQueuePresentKHR( _presentationQueue, &presentInfo ) != VK_SUCCESS ) {
+    result = vkQueuePresentKHR( _presentationQueue, &presentInfo );
+    if( result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||_framebufferResized ) {
+      _framebufferResized = false;
+      // Swap chain not good enough, recreate.
+      recreateSwapChain();
+    } else if( result != VK_SUCCESS ) {
       throw std::runtime_error( "failed to present queue!" );
     }
 
@@ -988,6 +1012,54 @@ private:
 
     // Update frame and adjust to allowed number of frames in flight
     _currentFrame = ( _currentFrame + 1 ) % MAX_FRAMES_IN_FLIGHT;
+  }
+
+  // There are events that may invalidate our current swap-chain
+  // (such as resizing the window), in which case we must recreate it
+  // in order to continue drawing.
+  void recreateSwapChain() {
+
+    int width = 0, height = 0;
+    glfwGetFramebufferSize( _window, &width, &height );
+    while( width == 0 || height == 0 ) {
+      // If minimized, keep polling until it isn't anymore.
+      glfwGetFramebufferSize( _window, &width, &height );
+      glfwWaitEvents();
+    }
+
+    std::cout << "Recreating swap chain with window width " << width << " and height " << height << std::endl;
+
+    vkDeviceWaitIdle( _logicalDevice );
+
+    cleanupSwapChain();
+
+    createSwapChain();
+    createImageViews();
+    createRenderPass();
+    createGraphicsPipeline();
+    createFramebuffers();
+    createCommandBuffers();
+  }
+
+  // Cleans up a swap chain and related resources.
+  void cleanupSwapChain() {
+    const VkAllocationCallbacks* allocator = nullptr;
+
+    for( size_t i = 0; i < _swapChainFramebuffers.size(); i++ ) {
+      vkDestroyFramebuffer( _logicalDevice, _swapChainFramebuffers[i], allocator );
+    }
+
+    vkFreeCommandBuffers( _logicalDevice, _commandPool, static_cast< uint32_t >( _commandBuffers.size() ), _commandBuffers.data() );
+    vkDestroyPipeline( _logicalDevice, _graphicsPipeline, allocator );
+    vkDestroyPipelineLayout( _logicalDevice, _pipelineLayout, allocator );
+    vkDestroyRenderPass( _logicalDevice, _renderPass, allocator );
+
+    for( size_t i = 0; i < _swapChainImageViews.size(); i++ ) {
+      vkDestroyImageView( _logicalDevice, _swapChainImageViews[i], allocator );
+    }
+
+    vkDestroySwapchainKHR( _logicalDevice, _swapChain, allocator );
+
   }
 
 
@@ -1010,6 +1082,8 @@ private:
   std::vector<VkFramebuffer> _swapChainFramebuffers;
   VkCommandPool _commandPool;
   std::vector<VkCommandBuffer> _commandBuffers;
+  size_t _currentFrame;
+  bool _framebufferResized;
 
   // Synchronization variables
   std::vector<VkSemaphore> _imageAvailableSemaphore;
@@ -1018,7 +1092,6 @@ private:
   std::vector<VkFence> _inFlightFences;
   // Prevent swap-chains from being rendered while in-flight.
   std::vector<VkFence> _imagesInFlight;
-  size_t _currentFrame;
 
 };
 
