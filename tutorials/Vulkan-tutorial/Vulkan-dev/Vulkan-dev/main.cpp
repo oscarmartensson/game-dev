@@ -15,6 +15,8 @@
 const int WIDTH = 800;
 const int HEIGHT = 600;
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 // Validation layers
 const std::vector<const char*> validationLayers = {
   // Validation layer
@@ -40,7 +42,8 @@ class HelloTriangleApplication {
 public:
   HelloTriangleApplication() :
     _window( nullptr ),
-    _physicalDevice( VK_NULL_HANDLE ) {};
+    _physicalDevice( VK_NULL_HANDLE ),
+    _currentFrame(0) {};
 
   void run() {
     initWindow();
@@ -92,7 +95,7 @@ private:
     createFramebuffers();
     createCommandPools();
     createCommandBuffers();
-    createSemaphores();
+    createSyncObjects();
   };
 
   void mainLoop() {
@@ -120,8 +123,12 @@ private:
     for( auto imageView : _swapChainImageViews ) {
       vkDestroyImageView( _logicalDevice, imageView, allocator );
     }
-    vkDestroySemaphore( _logicalDevice, _renderFinishedSemaphore, allocator );
-    vkDestroySemaphore( _logicalDevice, _imageAvailableSemaphore, allocator );
+    for( int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ ) {
+      vkDestroySemaphore( _logicalDevice, _renderFinishedSemaphore[i], allocator );
+      vkDestroySemaphore( _logicalDevice, _imageAvailableSemaphore[i], allocator );
+      vkDestroyFence( _logicalDevice, _inFlightFences[i], allocator );
+      vkDestroyFence( _logicalDevice, _imagesInFlight[i], allocator );
+    }
     vkDestroySurfaceKHR( _instance, _surface, allocator );
     vkDestroyDevice( _logicalDevice, allocator );
     vkDestroyInstance( _instance, allocator );
@@ -892,29 +899,52 @@ private:
     }
   }
 
-  // Creates Semaphores to be used as locking mechanism during rendering.
-  void createSemaphores() {
+  // Creates objects to be used as locking mechanism during rendering.
+  void createSyncObjects() {
+
+    // One semaphore for each frame in flight
+    _imageAvailableSemaphore.resize( MAX_FRAMES_IN_FLIGHT );
+    _renderFinishedSemaphore.resize( MAX_FRAMES_IN_FLIGHT );
+    _inFlightFences.resize( MAX_FRAMES_IN_FLIGHT );
+    _imagesInFlight.resize( _swapChainImages.size(), VK_NULL_HANDLE );
+
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Initialize as signaled, otherwise we'd wait forever if we don't signal explicitly before checking vkWaitForFences.
 
-    if( vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_imageAvailableSemaphore ) != VK_SUCCESS ||
-        vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_renderFinishedSemaphore ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create semaphores!" );
+    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    for( size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ ) {
+      if( vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_imageAvailableSemaphore[i] ) != VK_SUCCESS ||
+          vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_renderFinishedSemaphore[i] ) != VK_SUCCESS ||
+          vkCreateFence( _logicalDevice, &fenceInfo, nullptr, &_inFlightFences[i] ) != VK_SUCCESS ) {
+        throw std::runtime_error( "failed to create semaphores!" );
+      }
     }
+    
   }
 
   void drawFrame() {
+    // Wait for previous fences to be signaled
+    vkWaitForFences( _logicalDevice, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX );
+
     uint32_t imageIndex;
-    VkFence fence = VK_NULL_HANDLE; // Not used
     const uint64_t timeout = UINT64_MAX; // in nanoseconds
 
-    // Acquires an image from the _logicalDevice and the _swapChain, and assigns the index of it to imageIndex.
-    vkAcquireNextImageKHR( _logicalDevice, _swapChain, timeout, _imageAvailableSemaphore, fence, &imageIndex );
+    // Acquires an image from the _logicalDevice and the _swapChain, and assigns the index of it to imageIndex. Also 
+    vkAcquireNextImageKHR( _logicalDevice, _swapChain, timeout, _imageAvailableSemaphore[_currentFrame], VK_NULL_HANDLE /* Initialize to no fence since initially no images are used by the frame */, &imageIndex );
 
-    VkSemaphore waitSemaphores[] = { _imageAvailableSemaphore };
-    VkSemaphore signalSemaphores[] = { _renderFinishedSemaphore };
+    // Check if a previous frame is using this image (i.e. there is a fence to wait on)
+    if( _imagesInFlight[imageIndex] != VK_NULL_HANDLE ) {
+      vkWaitForFences( _logicalDevice, 1, &_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX );
+    }
+    // Mark the image as now being in use by this frame
+    _imagesInFlight[imageIndex] = _inFlightFences[_currentFrame];
+
+    VkSemaphore waitSemaphores[] = { _imageAvailableSemaphore[_currentFrame] };
+    VkSemaphore signalSemaphores[] = { _renderFinishedSemaphore[_currentFrame] };
     // Wait for color attachment output before executing commands.
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
@@ -928,9 +958,12 @@ private:
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
+    // Un-signal fences (reset). Will otherwise continue to be signaled.
+    vkResetFences( _logicalDevice, 1, &_inFlightFences[_currentFrame] );
+
     const uint32_t submitCount = 1;
     // Submit commandBuffer to the graphicsQueue.
-    if( vkQueueSubmit( _graphicsQueue, submitCount, &submitInfo, fence ) != VK_SUCCESS ) {
+    if( vkQueueSubmit( _graphicsQueue, submitCount, &submitInfo, _inFlightFences[_currentFrame] ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to submit draw command buffer!" );
     }
 
@@ -950,9 +983,12 @@ private:
       throw std::runtime_error( "failed to present queue!" );
     }
 
-    vkQueueWaitIdle( _presentationQueue );
-  }
+    // Not needed when new synchronization scheme is in place
+    //vkQueueWaitIdle( _presentationQueue );
 
+    // Update frame and adjust to allowed number of frames in flight
+    _currentFrame = ( _currentFrame + 1 ) % MAX_FRAMES_IN_FLIGHT;
+  }
 
 
   // Member variables
@@ -976,8 +1012,13 @@ private:
   std::vector<VkCommandBuffer> _commandBuffers;
 
   // Synchronization variables
-  VkSemaphore _imageAvailableSemaphore;
-  VkSemaphore _renderFinishedSemaphore;
+  std::vector<VkSemaphore> _imageAvailableSemaphore;
+  std::vector<VkSemaphore> _renderFinishedSemaphore;
+  // Fences that synchronize the CPU with the GPU. Prevents frames to be sent from CPU -> GPU if the GPU is not done processing previous frame(s).
+  std::vector<VkFence> _inFlightFences;
+  // Prevent swap-chains from being rendered while in-flight.
+  std::vector<VkFence> _imagesInFlight;
+  size_t _currentFrame;
 
 };
 
