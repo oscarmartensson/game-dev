@@ -45,7 +45,7 @@ const bool enableValidationLayers = true;
 struct Vertex {
   glm::vec2 pos;
   glm::vec3 color;
-
+  
   static VkVertexInputBindingDescription getBindingDescription() {
     VkVertexInputBindingDescription bindingDescription = {};
     bindingDescription.binding = 0;
@@ -76,9 +76,14 @@ struct Vertex {
 };
 
 const std::vector<Vertex> vertices = {
-{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+  {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+  {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+  {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+  {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+
+const std::vector<uint16_t> indices = {
+   0, 1, 2, 2, 3, 0
 };
 
 
@@ -147,6 +152,7 @@ private:
     createFramebuffers();
     createCommandPools();
     createVertexBuffer();
+    createIndexBuffer();
     createCommandBuffers();
     createSyncObjects();
   };
@@ -169,6 +175,9 @@ private:
 
     vkDestroyBuffer( _logicalDevice, _vertexBuffer, allocator );
     vkFreeMemory( _logicalDevice, _vertexBufferMemory, allocator );
+
+    vkDestroyBuffer( _logicalDevice, _indexBuffer, allocator );
+    vkFreeMemory( _logicalDevice, _indexBufferMemory, allocator );
 
     for( int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ ) {
       vkDestroySemaphore( _logicalDevice, _renderFinishedSemaphore[i], allocator );
@@ -463,7 +472,7 @@ private:
   VkSurfaceFormatKHR chooseSwapSurfaceFormat( const std::vector<VkSurfaceFormatKHR>& availableFormats ) {
 
     for( const auto& availableFormat : availableFormats ) {
-      if( availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR ) {
+      if( availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM /*VK_FORMAT_B8G8R8A8_SRGB*/ && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR ) {
         return availableFormat;
       }
     }
@@ -944,12 +953,17 @@ private:
       VkDeviceSize offsets[] = { 0 };
       vkCmdBindVertexBuffers( _commandBuffers[i], 0, 1, vertexBuffers, offsets );
 
-      vkCmdDraw( _commandBuffers[i],
-                  static_cast<uint32_t>( vertices.size() ), // Vertex count
-                  1, // Instance count
-                  0, // First vertex
-                  0  // First instance 
-               );
+      vkCmdBindIndexBuffer( _commandBuffers[i], _indexBuffer, 0, VK_INDEX_TYPE_UINT16 );
+
+      vkCmdDrawIndexed( _commandBuffers[i], static_cast< uint32_t >( indices.size() ), 1, 0, 0, 0 );
+
+      // Used when not using index buffers.
+      //vkCmdDraw( _commandBuffers[i],
+      //            static_cast<uint32_t>( vertices.size() ), // Vertex count
+      //            1, // Instance count
+      //            0, // First vertex
+      //            0  // First instance 
+      //         );
 
       // End therender pass
       vkCmdEndRenderPass( _commandBuffers[i] );
@@ -1121,35 +1135,34 @@ private:
 
   // Creates a vertex buffer.
   void createVertexBuffer() {
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof( vertices[0] ) * vertices.size();
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if( vkCreateBuffer( _logicalDevice, &bufferInfo, nullptr, &_vertexBuffer ) != VK_SUCCESS ) {
-      throw std::runtime_error( "Failed to create vertex buffer!" );
-    }
+    VkDeviceSize bufferSize = sizeof( vertices[0] ) * vertices.size();
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements( _logicalDevice, _vertexBuffer, &memRequirements );
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType( memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
 
-    if( vkAllocateMemory( _logicalDevice, &allocInfo, nullptr, &_vertexBufferMemory ) != VK_SUCCESS ) {
-      throw std::runtime_error( "Failed to allocate vertex buffer memory!" );
-    }
+    // Creates a temporary staging buffer. Since we can't map memory directly to the most efficient memory type, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, we use a staging buffer first
+    // to map memory, then copy the content of that to the real vertexBuffer using the copyBuffer function.
+    createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory );
 
-    vkBindBufferMemory( _logicalDevice, _vertexBuffer, _vertexBufferMemory, 0 );
-
-    // Maps the data pointer to the vertexBufferMemory adress, then copies memory from vertices to the data pointer (i.e. to the vertexBufferMemory adress),
+    // Maps the data pointer to the stagingBufferMemory adress, then copies memory from vertices to the data pointer (i.e. to the stagingBufferMemory adress),
     // and finally unmaps the data pointer.
     void* data;
-    vkMapMemory( _logicalDevice, _vertexBufferMemory, 0, bufferInfo.size, 0, &data );
-    memcpy( data, vertices.data(), static_cast< size_t >( bufferInfo.size ) );
-    vkUnmapMemory( _logicalDevice, _vertexBufferMemory );
+    vkMapMemory(_logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data );
+    memcpy( data, vertices.data(), static_cast< size_t >( bufferSize ) );
+    vkUnmapMemory( _logicalDevice, stagingBufferMemory );
+
+    // Creates a vertex buffer on device memory, the most optimal memory area most efficient for device access.
+    createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _vertexBuffer, _vertexBufferMemory );
+
+    // Copy the data from the staging buffer to the actual vertex buffer in device local memory.
+    copyBuffer( stagingBuffer, _vertexBuffer, bufferSize );
+
+    // Destroy and free the temporary staging buffer.
+    const VkAllocationCallbacks* allocatorCallbacks = VK_NULL_HANDLE;
+    vkDestroyBuffer( _logicalDevice, stagingBuffer, allocatorCallbacks );
+    vkFreeMemory( _logicalDevice, stagingBufferMemory, allocatorCallbacks );
+
   }
 
   // Queries the physical device for different types of gpu memory and selects one.
@@ -1164,6 +1177,106 @@ private:
     }
 
     throw std::runtime_error( "Failed to find suitable memory type!" );
+  }
+
+  void createBuffer( VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory ) {
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if( vkCreateBuffer( _logicalDevice, &bufferInfo, nullptr, &buffer ) != VK_SUCCESS ) {
+      throw std::runtime_error( "Failed to create vertex buffer!" );
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements( _logicalDevice, buffer, &memRequirements );
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType( memRequirements.memoryTypeBits, properties );
+
+    // Ideally you shouldn't allocate memory many times, since this is limited by maxMemoryAllocationCount physical device limit,
+    // and can be as low as 4096 even on good GPUs. A costum allocator or the VulkanMemoryAllocator should be used instead to allocate many objects.
+    if( vkAllocateMemory( _logicalDevice, &allocInfo, nullptr, &bufferMemory ) != VK_SUCCESS ) {
+      throw std::runtime_error( "Failed to allocate vertex buffer memory!" );
+    }
+
+    vkBindBufferMemory( _logicalDevice, buffer, bufferMemory, 0 );
+  }
+
+  // Copy a buffer from srcBuffer to dstBuffer of size size.
+  void copyBuffer( VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size ) {
+    VkCommandBufferAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = _commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    // Create a command buffer for copying the other buffers. Copying buffers, just as drawing,
+    // is done with command buffers.
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers( _logicalDevice, &allocInfo, &commandBuffer );
+
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    // Begin recording commands.
+    if( vkBeginCommandBuffer( commandBuffer, &beginInfo ) != VK_SUCCESS ) {
+      throw std::runtime_error( "failed to begin recording command buffer!" );
+    }
+
+    VkBufferCopy copyRegion = {};
+    copyRegion.srcOffset = 0;
+    copyRegion.dstOffset = 0;
+    copyRegion.size = size;
+
+    // Copy command.
+    vkCmdCopyBuffer( commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion );
+
+    // End command recording.
+    vkEndCommandBuffer( commandBuffer );
+
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    // submit the commands to the queue and wait for it to finish.
+    vkQueueSubmit( _graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE );
+    vkQueueWaitIdle( _graphicsQueue );
+
+    // Free the command buffer used for copying.
+    vkFreeCommandBuffers( _logicalDevice, _commandPool, 1, &commandBuffer );
+  }
+
+  // Creates index buffers to use for rendering.
+  void createIndexBuffer() {
+    VkDeviceSize bufferSize = sizeof( indices[0] ) * indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    // Create the staging buffer
+    createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory );
+
+    // Copy the data from the indices to the stagingBuffer.
+    void* data;
+    vkMapMemory( _logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data );
+    memcpy( data, indices.data(), ( size_t )bufferSize );
+    vkUnmapMemory( _logicalDevice, stagingBufferMemory );
+
+    // Create the index buffer.
+    createBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _indexBuffer, _indexBufferMemory );
+
+    // Cop the data from the staging buffer to the index buffer.
+    copyBuffer( stagingBuffer, _indexBuffer, bufferSize );
+
+    const VkAllocationCallbacks* allocatorCallbacks = VK_NULL_HANDLE;
+    vkDestroyBuffer( _logicalDevice, stagingBuffer, allocatorCallbacks );
+    vkFreeMemory( _logicalDevice, stagingBufferMemory, allocatorCallbacks );
   }
 
 
@@ -1189,9 +1302,11 @@ private:
   VkCommandPool _commandPool;
   std::vector<VkCommandBuffer> _commandBuffers;
 
-  // Vertex buffer variables
+  // Buffer variables
   VkBuffer _vertexBuffer;
   VkDeviceMemory _vertexBufferMemory;
+  VkBuffer _indexBuffer;
+  VkDeviceMemory _indexBufferMemory;
 
   // Misc
   size_t _currentFrame;
