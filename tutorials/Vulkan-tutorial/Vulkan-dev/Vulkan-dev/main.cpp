@@ -1,6 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <glfw/glfw3.h>
 
+// STL
 #include <iostream>
 #include <stdexcept>
 #include <functional>
@@ -11,6 +12,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
+#include <array>
+
+// GLM
+#include <glm/glm.hpp>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -36,6 +41,45 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
+
+struct Vertex {
+  glm::vec2 pos;
+  glm::vec3 color;
+
+  static VkVertexInputBindingDescription getBindingDescription() {
+    VkVertexInputBindingDescription bindingDescription = {};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof( Vertex );
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return bindingDescription;
+  }
+
+  static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    // Common binding description formats for different data types:
+    // float: VK_FORMAT_R32_SFLOAT
+    // vec2 : VK_FORMAT_R32G32_SFLOAT
+    // vec3 : VK_FORMAT_R32G32B32_SFLOAT
+    // vec4 : VK_FORMAT_R32G32B32A32_SFLOAT
+    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof( Vertex, pos );
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof( Vertex, color );
+
+    return attributeDescriptions;
+  }
+};
+
+const std::vector<Vertex> vertices = {
+{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
 
 
 class HelloTriangleApplication {
@@ -70,7 +114,7 @@ public:
 
 private:
 
-  // Member functions
+  //--- Member functions ---
 
   static void framebufferResizeCallback( GLFWwindow* window, int width, int height ) {
     auto app = reinterpret_cast< HelloTriangleApplication* >( glfwGetWindowUserPointer( window ) );
@@ -102,6 +146,7 @@ private:
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPools();
+    createVertexBuffer();
     createCommandBuffers();
     createSyncObjects();
   };
@@ -121,6 +166,9 @@ private:
     const VkAllocationCallbacks* allocator = nullptr;
 
     cleanupSwapChain();
+
+    vkDestroyBuffer( _logicalDevice, _vertexBuffer, allocator );
+    vkFreeMemory( _logicalDevice, _vertexBufferMemory, allocator );
 
     for( int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ ) {
       vkDestroySemaphore( _logicalDevice, _renderFinishedSemaphore[i], allocator );
@@ -567,13 +615,17 @@ private:
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo , fragShaderStageInfo };
 
+    // Get vertex related descriptions
+    VkVertexInputBindingDescription bindingDescription = Vertex::getBindingDescription();
+    std::array<VkVertexInputAttributeDescription, 2> attributeDescription = Vertex::getAttributeDescriptions();
+
     // Describe the fixed function parts of the pipeline.
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>( attributeDescription.size() );
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
 
     // Specify how we should draw the points, similar to specifying
     // if we should use an ebo and use indices in OpenGL, and also if
@@ -805,6 +857,7 @@ private:
     }
   }
 
+  // Creates framebuffer(s) for the pipeline to use.
   void createFramebuffers() {
     _swapChainFramebuffers.resize( _swapChainImageViews.size() );
 
@@ -887,8 +940,12 @@ private:
       // Bind the pipeline we want to render to.
       vkCmdBindPipeline( _commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline );
 
+      VkBuffer vertexBuffers[] = { _vertexBuffer };
+      VkDeviceSize offsets[] = { 0 };
+      vkCmdBindVertexBuffers( _commandBuffers[i], 0, 1, vertexBuffers, offsets );
+
       vkCmdDraw( _commandBuffers[i],
-                  3, // Vertex count
+                  static_cast<uint32_t>( vertices.size() ), // Vertex count
                   1, // Instance count
                   0, // First vertex
                   0  // First instance 
@@ -1062,8 +1119,55 @@ private:
 
   }
 
+  // Creates a vertex buffer.
+  void createVertexBuffer() {
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof( vertices[0] ) * vertices.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  // Member variables
+    if( vkCreateBuffer( _logicalDevice, &bufferInfo, nullptr, &_vertexBuffer ) != VK_SUCCESS ) {
+      throw std::runtime_error( "Failed to create vertex buffer!" );
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements( _logicalDevice, _vertexBuffer, &memRequirements );
+    VkMemoryAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType( memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT );
+
+    if( vkAllocateMemory( _logicalDevice, &allocInfo, nullptr, &_vertexBufferMemory ) != VK_SUCCESS ) {
+      throw std::runtime_error( "Failed to allocate vertex buffer memory!" );
+    }
+
+    vkBindBufferMemory( _logicalDevice, _vertexBuffer, _vertexBufferMemory, 0 );
+
+    // Maps the data pointer to the vertexBufferMemory adress, then copies memory from vertices to the data pointer (i.e. to the vertexBufferMemory adress),
+    // and finally unmaps the data pointer.
+    void* data;
+    vkMapMemory( _logicalDevice, _vertexBufferMemory, 0, bufferInfo.size, 0, &data );
+    memcpy( data, vertices.data(), static_cast< size_t >( bufferInfo.size ) );
+    vkUnmapMemory( _logicalDevice, _vertexBufferMemory );
+  }
+
+  // Queries the physical device for different types of gpu memory and selects one.
+  uint32_t findMemoryType( uint32_t typeFilter, VkMemoryPropertyFlags properties ) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties( _physicalDevice, &memProperties );
+
+    for( uint32_t i = 0; i < memProperties.memoryTypeCount; i++ ) {
+      if( (typeFilter & ( 1 << i )) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties ) {
+        return i;
+      }
+    }
+
+    throw std::runtime_error( "Failed to find suitable memory type!" );
+  }
+
+
+  // --- Member variables ---
   GLFWwindow* _window;
   VkInstance _instance;
   VkSurfaceKHR _surface;
@@ -1071,6 +1175,8 @@ private:
   VkDevice _logicalDevice;
   VkQueue _graphicsQueue;
   VkQueue _presentationQueue;
+
+  // Graphics pipeline and swapchain variables
   VkSwapchainKHR _swapChain;
   std::vector<VkImage> _swapChainImages;
   VkFormat _swapChainImageFormat;
@@ -1082,6 +1188,12 @@ private:
   std::vector<VkFramebuffer> _swapChainFramebuffers;
   VkCommandPool _commandPool;
   std::vector<VkCommandBuffer> _commandBuffers;
+
+  // Vertex buffer variables
+  VkBuffer _vertexBuffer;
+  VkDeviceMemory _vertexBufferMemory;
+
+  // Misc
   size_t _currentFrame;
   bool _framebufferResized;
 
