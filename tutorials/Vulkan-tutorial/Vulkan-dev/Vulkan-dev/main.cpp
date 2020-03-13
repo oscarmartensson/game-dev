@@ -13,9 +13,12 @@
 #include <cstdint>
 #include <fstream>
 #include <array>
+#include <chrono>
 
 // GLM
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -86,6 +89,12 @@ const std::vector<uint16_t> indices = {
    0, 1, 2, 2, 3, 0
 };
 
+struct UniformBufferObject {
+  glm::mat4 model;
+  glm::mat4 view;
+  glm::mat4 proj;
+};
+
 
 class HelloTriangleApplication {
 public:
@@ -148,11 +157,15 @@ private:
     createSwapChain();
     createImageViews();
     createRenderPass();
+    createDescriptorSetLayout();
     createGraphicsPipeline();
     createFramebuffers();
     createCommandPools();
     createVertexBuffer();
     createIndexBuffer();
+    createUniformBuffers();
+    createDescriptorPool();
+    createDescriptorSets();
     createCommandBuffers();
     createSyncObjects();
   };
@@ -169,9 +182,11 @@ private:
   // Cleans up various things after application is finished running
   void cleanup() {
     // Cleanup Vulkan-related resources create explicitly by the user.
-    const VkAllocationCallbacks* allocator = nullptr;
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE;
 
     cleanupSwapChain();
+
+    vkDestroyDescriptorSetLayout( _logicalDevice, _descriptorSetLayout, allocator );
 
     vkDestroyBuffer( _logicalDevice, _vertexBuffer, allocator );
     vkFreeMemory( _logicalDevice, _vertexBufferMemory, allocator );
@@ -185,7 +200,7 @@ private:
       vkDestroyFence( _logicalDevice, _inFlightFences[i], allocator );
     }
 
-    vkDestroyCommandPool( _logicalDevice, _commandPool, nullptr );
+    vkDestroyCommandPool( _logicalDevice, _commandPool, allocator );
 
     vkDestroyDevice( _logicalDevice, allocator );
     vkDestroySurfaceKHR( _instance, _surface, allocator );
@@ -266,7 +281,7 @@ private:
       instanceCreateInfo.enabledLayerCount = 0;
     }
 
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateInstance( &instanceCreateInfo, allocator, &_instance ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create instance!" );
     }
@@ -275,7 +290,7 @@ private:
   // Creates a surface in Vulkan using glfw. This is where Vulkan (which isn't platform agnostic)
   // connects with the glfw window used to present graphics.
   void createSurface() {
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( glfwCreateWindowSurface( _instance, _window, allocator, &_surface ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create window surface!" );
     }
@@ -413,7 +428,7 @@ private:
       createInfo.enabledLayerCount = 0;
     }
 
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateDevice( _physicalDevice, &createInfo, allocator, &_logicalDevice ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create logical device!" );
     }
@@ -558,7 +573,7 @@ private:
     // If window is resized, the swapchain could be invalidated, and would thus need to be to recreated, in which case it could be passed here.
     createInfo.oldSwapchain = VK_NULL_HANDLE;
     
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateSwapchainKHR( _logicalDevice, &createInfo, allocator, &_swapChain ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create swap chain!" );
     }
@@ -576,7 +591,7 @@ private:
   void createImageViews() {
     _swapChainImageViews.resize( _swapChainImages.size() );
     for( size_t i = 0; i < _swapChainImages.size(); i++ ) {
-      const VkAllocationCallbacks* allocator = nullptr; // Not used
+      const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
       VkImageViewCreateInfo createInfo = {};
       createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
       createInfo.image = _swapChainImages[i];
@@ -673,7 +688,9 @@ private:
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    // Since we're using descriptor sets and flipped the y-coordinate of the projection matrix,
+    // we need to draw counter clockwise rather than clockwise, otherwise the faces will be culled.
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f; // Optional
     rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -749,12 +766,12 @@ private:
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-    if( vkCreatePipelineLayout( _logicalDevice, &pipelineLayoutInfo, nullptr, &_pipelineLayout ) != VK_SUCCESS ) {
+    if( vkCreatePipelineLayout( _logicalDevice, &pipelineLayoutInfo, VK_NULL_HANDLE, &_pipelineLayout ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create pipeline layout!" );
     }
 
@@ -777,11 +794,11 @@ private:
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // If a similar pipeline exists that wants to be reused, this could be used as pointer to that.
     pipelineInfo.basePipelineIndex = -1; // Optional
 
-    if( vkCreateGraphicsPipelines( _logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline ) != VK_SUCCESS ) {
+    if( vkCreateGraphicsPipelines( _logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, VK_NULL_HANDLE, &_graphicsPipeline ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create graphics pipeline!" );
     }
 
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
 
     vkDestroyShaderModule( _logicalDevice, vertShaderModule, allocator );
     vkDestroyShaderModule( _logicalDevice, fragShaderModule, allocator );
@@ -815,7 +832,7 @@ private:
     createInfo.pCode = reinterpret_cast<const uint32_t*>( code.data() );
 
     VkShaderModule shaderModule;
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateShaderModule( _logicalDevice, &createInfo, allocator, &shaderModule ) != VK_SUCCESS ) {
       throw std::runtime_error( "Failed to create shader module!" );
     }
@@ -861,7 +878,7 @@ private:
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if( vkCreateRenderPass( _logicalDevice, &renderPassInfo, nullptr, &_renderPass ) != VK_SUCCESS ) {
+    if( vkCreateRenderPass( _logicalDevice, &renderPassInfo, VK_NULL_HANDLE, &_renderPass ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create render pass!" );
     }
   }
@@ -885,7 +902,7 @@ private:
       framebufferInfo.height = _swapChainExtent.height;
       framebufferInfo.layers = 1;
 
-      const VkAllocationCallbacks* allocator = nullptr; // Not used
+      const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
 
       if( vkCreateFramebuffer( _logicalDevice, &framebufferInfo, allocator, &_swapChainFramebuffers[i] ) != VK_SUCCESS ) {
         throw std::runtime_error( "failed to create framebuffer!" );
@@ -902,7 +919,7 @@ private:
     poolInfo.flags = 0;
 
     // Create command pools, which will manage the memory used to store the command buffers.
-    if( vkCreateCommandPool( _logicalDevice, &poolInfo, nullptr, &_commandPool ) != VK_SUCCESS ) {
+    if( vkCreateCommandPool( _logicalDevice, &poolInfo, VK_NULL_HANDLE, &_commandPool ) != VK_SUCCESS ) {
       throw std::runtime_error( "failed to create command pool!" );
     }
   }
@@ -951,10 +968,17 @@ private:
 
       VkBuffer vertexBuffers[] = { _vertexBuffer };
       VkDeviceSize offsets[] = { 0 };
+
+      // Bind the vertex buffers.
       vkCmdBindVertexBuffers( _commandBuffers[i], 0, 1, vertexBuffers, offsets );
 
+      // Bind the index buffer.
       vkCmdBindIndexBuffer( _commandBuffers[i], _indexBuffer, 0, VK_INDEX_TYPE_UINT16 );
 
+      // Bind the descriptor sets used for the uniform buffers.
+      vkCmdBindDescriptorSets( _commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[i], 0, VK_NULL_HANDLE );
+
+      // Draw.
       vkCmdDrawIndexed( _commandBuffers[i], static_cast< uint32_t >( indices.size() ), 1, 0, 0, 0 );
 
       // Used when not using index buffers.
@@ -990,11 +1014,11 @@ private:
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Initialize as signaled, otherwise we'd wait forever if we don't signal explicitly before checking vkWaitForFences.
 
-    const VkAllocationCallbacks* allocator = nullptr; // Not used
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     for( size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++ ) {
       if( vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_imageAvailableSemaphore[i] ) != VK_SUCCESS ||
           vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_renderFinishedSemaphore[i] ) != VK_SUCCESS ||
-          vkCreateFence( _logicalDevice, &fenceInfo, nullptr, &_inFlightFences[i] ) != VK_SUCCESS ) {
+          vkCreateFence( _logicalDevice, &fenceInfo, allocator, &_inFlightFences[i] ) != VK_SUCCESS ) {
         throw std::runtime_error( "failed to create semaphores!" );
       }
     }
@@ -1037,6 +1061,9 @@ private:
     VkSemaphore signalSemaphores[] = { _renderFinishedSemaphore[_currentFrame] };
     // Wait for color attachment output before executing commands.
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+    // Update the uniform buffers.
+    updateUniformBuffers( imageIndex );
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1109,12 +1136,15 @@ private:
     createRenderPass();
     createGraphicsPipeline();
     createFramebuffers();
+    createUniformBuffers();
+    createDescriptorPool();
+    createDescriptorSets();
     createCommandBuffers();
   }
 
   // Cleans up a swap chain and related resources.
   void cleanupSwapChain() {
-    const VkAllocationCallbacks* allocator = nullptr;
+    const VkAllocationCallbacks* allocator = VK_NULL_HANDLE;
 
     for( size_t i = 0; i < _swapChainFramebuffers.size(); i++ ) {
       vkDestroyFramebuffer( _logicalDevice, _swapChainFramebuffers[i], allocator );
@@ -1130,6 +1160,13 @@ private:
     }
 
     vkDestroySwapchainKHR( _logicalDevice, _swapChain, allocator );
+
+    for( size_t i = 0; i < _swapChainImages.size(); i++ ) {
+      vkDestroyBuffer( _logicalDevice, _uniformBuffers[i], allocator );
+      vkFreeMemory( _logicalDevice, _uniformBuffersMemory[i], allocator );
+    }
+
+    vkDestroyDescriptorPool( _logicalDevice, _descriptorPool, allocator );
 
   }
 
@@ -1186,7 +1223,7 @@ private:
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if( vkCreateBuffer( _logicalDevice, &bufferInfo, nullptr, &buffer ) != VK_SUCCESS ) {
+    if( vkCreateBuffer( _logicalDevice, &bufferInfo, VK_NULL_HANDLE, &buffer ) != VK_SUCCESS ) {
       throw std::runtime_error( "Failed to create vertex buffer!" );
     }
 
@@ -1199,7 +1236,7 @@ private:
 
     // Ideally you shouldn't allocate memory many times, since this is limited by maxMemoryAllocationCount physical device limit,
     // and can be as low as 4096 even on good GPUs. A costum allocator or the VulkanMemoryAllocator should be used instead to allocate many objects.
-    if( vkAllocateMemory( _logicalDevice, &allocInfo, nullptr, &bufferMemory ) != VK_SUCCESS ) {
+    if( vkAllocateMemory( _logicalDevice, &allocInfo, VK_NULL_HANDLE, &bufferMemory ) != VK_SUCCESS ) {
       throw std::runtime_error( "Failed to allocate vertex buffer memory!" );
     }
 
@@ -1279,6 +1316,113 @@ private:
     vkFreeMemory( _logicalDevice, stagingBufferMemory, allocatorCallbacks );
   }
 
+  void createDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Notifies that this ubo will act on the vertex shader stage.
+    uboLayoutBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    if( vkCreateDescriptorSetLayout( _logicalDevice, &layoutInfo, VK_NULL_HANDLE, &_descriptorSetLayout ) != VK_SUCCESS ) {
+      throw std::runtime_error( "failed to create descriptor set layout!" );
+    }
+  }
+
+  // Creates uniform buffers.
+  void createUniformBuffers() {
+    VkDeviceSize bufferSize = sizeof( UniformBufferObject );
+    _uniformBuffers.resize( _swapChainImages.size() );
+    _uniformBuffersMemory.resize( _swapChainImages.size() );
+
+    for( size_t i = 0; i < _swapChainImages.size(); i++ ) {
+      createBuffer( bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, _uniformBuffers[i], _uniformBuffersMemory[i] );
+    }
+  }
+
+  // Updates the uniform buffers.
+  void updateUniformBuffers( const uint32_t imageIndex) {
+    static std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+
+    std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>( currentTime - startTime ).count();
+
+    UniformBufferObject ubo = {};
+    // Rotate the model around the z-axis 90 degress as time progresses.
+    ubo.model = glm::rotate( glm::mat4( 1.0f ), time * glm::radians( 90.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+
+    // Look at the geometry from "above" at 45 deg angle.
+    ubo.view = glm::lookAt( glm::vec3( 2.0f, 2.0f, 2.0f ), glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f ) );
+
+    // 45 deg vertical field of view. Aspect ratio is swapchain extent width / height.
+    ubo.proj = glm::perspective( glm::radians( 45.0f ), _swapChainExtent.width / static_cast< float >( _swapChainExtent.height ), 0.1f, 10.0f );
+    // glm, designed for OpenGL, has y-coordinate flipped upside down. Compensate for this change.
+    ubo.proj[1][1] *= -1;
+
+    void* data;
+    vkMapMemory( _logicalDevice, _uniformBuffersMemory[imageIndex], 0, sizeof( ubo ), 0, &data );
+    memcpy( data, &ubo, sizeof( ubo ) );
+    vkUnmapMemory( _logicalDevice, _uniformBuffersMemory[imageIndex] );
+  }
+
+  // Creates descriptor pool necessary to create the descriptor sets, in turn used for the uniform buffers.
+  void createDescriptorPool() {
+    VkDescriptorPoolSize poolSize = {};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = static_cast< uint32_t >( _swapChainImages.size() );
+
+    VkDescriptorPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = static_cast< uint32_t >( _swapChainImages.size() );
+
+    if( vkCreateDescriptorPool( _logicalDevice, &poolInfo, VK_NULL_HANDLE, &_descriptorPool ) != VK_SUCCESS ) {
+      throw std::runtime_error( "failed to create descriptor pool!" );
+    }
+  }
+
+  // Create descriptor sets
+  void createDescriptorSets() {
+    std::vector<VkDescriptorSetLayout> layouts( _swapChainImages.size(), _descriptorSetLayout );
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = _descriptorPool;
+    allocInfo.descriptorSetCount = static_cast< uint32_t >( _swapChainImages.size() );
+    allocInfo.pSetLayouts = layouts.data();
+
+    // Resize the descriptor sets to correct size, and allocate it.
+    _descriptorSets.resize( _swapChainImages.size() );
+    if( vkAllocateDescriptorSets( _logicalDevice, &allocInfo, _descriptorSets.data() ) != VK_SUCCESS ) {
+      throw std::runtime_error( "failed to allocate descriptor sets!" );
+    }
+
+    // configure the descriptor sets.
+    for( size_t i = 0; i < _swapChainImages.size(); i++ ) {
+      VkDescriptorBufferInfo bufferInfo = {};
+      bufferInfo.buffer = _uniformBuffers[i];
+      bufferInfo.offset = 0;
+      bufferInfo.range = sizeof( UniformBufferObject );
+
+      VkWriteDescriptorSet descriptorWrite = {};
+      descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      descriptorWrite.dstSet = _descriptorSets[i];
+      descriptorWrite.dstBinding = 0; // The binding location we gave it in the shader.
+      descriptorWrite.dstArrayElement = 0; // Descriptor is not an array, but a struct, so just put 0.
+      descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      descriptorWrite.descriptorCount = 1;
+      descriptorWrite.pBufferInfo = &bufferInfo;
+      descriptorWrite.pImageInfo = nullptr;
+      descriptorWrite.pTexelBufferView = nullptr;
+
+      vkUpdateDescriptorSets( _logicalDevice, 1, &descriptorWrite, 0, nullptr );
+    }
+  }
 
   // --- Member variables ---
   GLFWwindow* _window;
@@ -1296,9 +1440,12 @@ private:
   VkExtent2D _swapChainExtent;
   std::vector<VkImageView> _swapChainImageViews;
   VkRenderPass _renderPass;
+  VkDescriptorSetLayout _descriptorSetLayout;
   VkPipelineLayout _pipelineLayout;
   VkPipeline _graphicsPipeline;
   std::vector<VkFramebuffer> _swapChainFramebuffers;
+  VkDescriptorPool _descriptorPool;
+  std::vector<VkDescriptorSet> _descriptorSets;
   VkCommandPool _commandPool;
   std::vector<VkCommandBuffer> _commandBuffers;
 
@@ -1307,6 +1454,8 @@ private:
   VkDeviceMemory _vertexBufferMemory;
   VkBuffer _indexBuffer;
   VkDeviceMemory _indexBufferMemory;
+  std::vector<VkBuffer> _uniformBuffers;
+  std::vector<VkDeviceMemory> _uniformBuffersMemory;
 
   // Misc
   size_t _currentFrame;
