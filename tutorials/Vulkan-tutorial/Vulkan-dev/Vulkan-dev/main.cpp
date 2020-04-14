@@ -1169,6 +1169,7 @@ private:
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createDepthResources();
     createFramebuffers();
     createUniformBuffers();
     createDescriptorPool();
@@ -1179,6 +1180,10 @@ private:
   // Cleans up a swap chain and related resources.
   void cleanupSwapChain() {
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE;
+
+    vkDestroyImageView( _logicalDevice, _depthImageView, allocator );
+    vkDestroyImage( _logicalDevice, _depthImage, allocator );
+    vkFreeMemory( _logicalDevice, _depthImageMemory, allocator );
 
     for( size_t i = 0; i < _swapChainFramebuffers.size(); i++ ) {
       vkDestroyFramebuffer( _logicalDevice, _swapChainFramebuffers[i], allocator );
