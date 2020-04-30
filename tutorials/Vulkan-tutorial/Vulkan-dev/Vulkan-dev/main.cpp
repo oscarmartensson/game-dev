@@ -24,6 +24,9 @@
 #include <chrono>
 #include <unordered_map>
 
+// C
+#include <string>
+
 // GLM
 #define GLM_FORCE_RADIANS           // Force use radians instead of degrees.
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // Vulkan uses depth range 0 -> 1, while OpenGL uses -1 -> 1, which is why we switch.
@@ -62,6 +65,8 @@ const bool enableValidationLayers = true;
 #else
 const bool enableValidationLayers = false;
 #endif
+
+//#define FULL_LOCATION ( __func__ + " " + " " + __LINE__)
 
 struct Vertex {
   glm::vec3 pos;
@@ -294,7 +299,7 @@ private:
 
     // Check if want to and can use validation layers for debug purposes.
     if( enableValidationLayers && !checkValidationLayerSupport() ) {
-      throw std::runtime_error( "validation layers requested, but not available!" );
+      throw std::runtime_error( "validation layers requested, but not available in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     VkApplicationInfo appInfo = {};
@@ -341,7 +346,7 @@ private:
 
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateInstance( &instanceCreateInfo, allocator, &_instance ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create instance!" );
+      throw std::runtime_error( "failed to create instance in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
   }
 
@@ -350,7 +355,7 @@ private:
   void createSurface() {
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( glfwCreateWindowSurface( _instance, _window, allocator, &_surface ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create window surface!" );
+      throw std::runtime_error( "failed to create window surface in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
   }
@@ -364,7 +369,7 @@ private:
     vkEnumeratePhysicalDevices( _instance, &deviceCount, nullptr );
 
     if( deviceCount == 0 ) {
-      throw std::runtime_error( "failed to find GPUs with Vulkan support!" );
+      throw std::runtime_error( "failed to find GPUs with Vulkan support in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     std::vector< VkPhysicalDevice > devices( deviceCount );
@@ -379,7 +384,7 @@ private:
     }
 
     if( physicalDevice == VK_NULL_HANDLE ) {
-      throw std::runtime_error( "failed to find a suitable GPU!" );
+      throw std::runtime_error( "failed to find a suitable GPU in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     _physicalDevice = physicalDevice;
@@ -489,7 +494,7 @@ private:
 
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateDevice( _physicalDevice, &createInfo, allocator, &_logicalDevice ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create logical device!" );
+      throw std::runtime_error( "failed to create logical device in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     // Get queues.
@@ -634,7 +639,7 @@ private:
     
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateSwapchainKHR( _logicalDevice, &createInfo, allocator, &_swapChain ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create swap chain!" );
+      throw std::runtime_error( "failed to create swap chain in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     // Load swap chain images into member variable.
@@ -650,7 +655,7 @@ private:
   void createImageViews() {
     _swapChainImageViews.resize( _swapChainImages.size() );
     for( size_t i = 0; i < _swapChainImages.size(); i++ ) {
-      _swapChainImageViews[i] = createImageView( _swapChainImages[i], _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT );
+      _swapChainImageViews[i] = createImageView( _swapChainImages[i], _swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1 );
     }
   }
 
@@ -822,7 +827,7 @@ private:
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
     if( vkCreatePipelineLayout( _logicalDevice, &pipelineLayoutInfo, VK_NULL_HANDLE, &_pipelineLayout ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create pipeline layout!" );
+      throw std::runtime_error( "failed to create pipeline layout in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     // With all previous info, create the pipeline info
@@ -845,7 +850,7 @@ private:
     pipelineInfo.basePipelineIndex = -1; // Optional
 
     if( vkCreateGraphicsPipelines( _logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, VK_NULL_HANDLE, &_graphicsPipeline ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create graphics pipeline!" );
+      throw std::runtime_error( "failed to create graphics pipeline in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
@@ -884,7 +889,7 @@ private:
     VkShaderModule shaderModule;
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
     if( vkCreateShaderModule( _logicalDevice, &createInfo, allocator, &shaderModule ) != VK_SUCCESS ) {
-      throw std::runtime_error( "Failed to create shader module!" );
+      throw std::runtime_error( "Failed to create shader module in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     return shaderModule;
@@ -947,7 +952,7 @@ private:
     renderPassInfo.pDependencies = &dependency;
 
     if( vkCreateRenderPass( _logicalDevice, &renderPassInfo, VK_NULL_HANDLE, &_renderPass ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create render pass!" );
+      throw std::runtime_error( "failed to create render pass in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
   }
 
@@ -971,7 +976,7 @@ private:
       const VkAllocationCallbacks* allocator = VK_NULL_HANDLE; // Not used
 
       if( vkCreateFramebuffer( _logicalDevice, &framebufferInfo, allocator, &_swapChainFramebuffers[i] ) != VK_SUCCESS ) {
-        throw std::runtime_error( "failed to create framebuffer!" );
+        throw std::runtime_error( "failed to create framebuffer in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
       }
     }
   }
@@ -986,7 +991,7 @@ private:
 
     // Create command pools, which will manage the memory used to store the command buffers.
     if( vkCreateCommandPool( _logicalDevice, &poolInfo, VK_NULL_HANDLE, &_commandPool ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create command pool!" );
+      throw std::runtime_error( "failed to create command pool in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
   }
 
@@ -1002,7 +1007,7 @@ private:
 
     // Allocate space for the command buffers.
     if( vkAllocateCommandBuffers( _logicalDevice, &allocInfo, _commandBuffers.data() ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to allocate command buffers!" );
+      throw std::runtime_error( "failed to allocate command buffers in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     for( size_t i = 0; i < _commandBuffers.size(); i++ ) {
@@ -1012,7 +1017,7 @@ private:
       beginInfo.pInheritanceInfo = nullptr; // Only relevant for secondary commandBuffers.
 
       if( vkBeginCommandBuffer( _commandBuffers[i], &beginInfo ) != VK_SUCCESS ) {
-        throw std::runtime_error( "failed to begin recording command buffer!" );
+        throw std::runtime_error( "failed to begin recording command buffer in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
       }
 
       VkRenderPassBeginInfo renderPassInfo = {};
@@ -1061,7 +1066,7 @@ private:
       vkCmdEndRenderPass( _commandBuffers[i] );
 
       if( vkEndCommandBuffer( _commandBuffers[i] ) != VK_SUCCESS ) {
-        throw std::runtime_error( "failed to record command buffer!" );
+        throw std::runtime_error( "failed to record command buffer in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
       }
     }
   }
@@ -1087,7 +1092,7 @@ private:
       if( vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_imageAvailableSemaphore[i] ) != VK_SUCCESS ||
           vkCreateSemaphore( _logicalDevice, &semaphoreInfo, allocator, &_renderFinishedSemaphore[i] ) != VK_SUCCESS ||
           vkCreateFence( _logicalDevice, &fenceInfo, allocator, &_inFlightFences[i] ) != VK_SUCCESS ) {
-        throw std::runtime_error( "failed to create semaphores!" );
+        throw std::runtime_error( "failed to create semaphores in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
       }
     }
     
@@ -1115,7 +1120,7 @@ private:
       recreateSwapChain();
       return;
     } else if( result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR ) {
-      throw std::runtime_error( "Failed to acquire swap chain image" );
+      throw std::runtime_error( "Failed to acquire swap chain image in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     // Check if a previous frame is using this image (i.e. there is a fence to wait on)
@@ -1149,7 +1154,7 @@ private:
     const uint32_t submitCount = 1;
     // Submit commandBuffer to the graphicsQueue.
     if( vkQueueSubmit( _graphicsQueue, submitCount, &submitInfo, _inFlightFences[_currentFrame] ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to submit draw command buffer!" );
+      throw std::runtime_error( "failed to submit draw command buffer in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     VkPresentInfoKHR presentInfo = {};
@@ -1170,7 +1175,7 @@ private:
       // Swap chain not good enough, recreate.
       recreateSwapChain();
     } else if( result != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to present queue!" );
+      throw std::runtime_error( "failed to present queue in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     // Not needed when new synchronization scheme is in place
@@ -1286,7 +1291,7 @@ private:
       }
     }
 
-    throw std::runtime_error( "Failed to find suitable memory type!" );
+    throw std::runtime_error( "Failed to find suitable memory type in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
   }
 
   void createBuffer( VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory ) {
@@ -1297,7 +1302,7 @@ private:
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     if( vkCreateBuffer( _logicalDevice, &bufferInfo, VK_NULL_HANDLE, &buffer ) != VK_SUCCESS ) {
-      throw std::runtime_error( "Failed to create vertex buffer!" );
+      throw std::runtime_error( "Failed to create vertex buffer in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     VkMemoryRequirements memRequirements;
@@ -1310,7 +1315,7 @@ private:
     // Ideally you shouldn't allocate memory many times, since this is limited by maxMemoryAllocationCount physical device limit,
     // and can be as low as 4096 even on good GPUs. A costum allocator or the VulkanMemoryAllocator should be used instead to allocate many objects.
     if( vkAllocateMemory( _logicalDevice, &allocInfo, VK_NULL_HANDLE, &bufferMemory ) != VK_SUCCESS ) {
-      throw std::runtime_error( "Failed to allocate vertex buffer memory!" );
+      throw std::runtime_error( "Failed to allocate vertex buffer memory in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     vkBindBufferMemory( _logicalDevice, buffer, bufferMemory, 0 );
@@ -1382,10 +1387,8 @@ private:
     layoutInfo.pBindings = bindings.data();
 
     if( vkCreateDescriptorSetLayout( _logicalDevice, &layoutInfo, VK_NULL_HANDLE, &_descriptorSetLayout ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create descriptor set layout!" );
+      throw std::runtime_error( "failed to create descriptor set layout in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
-
-
   }
 
   // Creates uniform buffers.
@@ -1441,7 +1444,7 @@ private:
     poolInfo.maxSets = static_cast< uint32_t >( _swapChainImages.size() );
 
     if( vkCreateDescriptorPool( _logicalDevice, &poolInfo, VK_NULL_HANDLE, &_descriptorPool ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create descriptor pool!" );
+      throw std::runtime_error( "failed to create descriptor pool in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
   }
 
@@ -1457,7 +1460,7 @@ private:
     // Resize the descriptor sets to correct size, and allocate it.
     _descriptorSets.resize( _swapChainImages.size() );
     if( vkAllocateDescriptorSets( _logicalDevice, &allocInfo, _descriptorSets.data() ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to allocate descriptor sets!" );
+      throw std::runtime_error( "failed to allocate descriptor sets in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     // configure the descriptor sets.
@@ -1498,14 +1501,18 @@ private:
     int texWidth, texHeight, texChannels;
 #ifdef STB_IMAGE_IMPLEMENTATION
     stbi_uc* pixels = stbi_load( TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha );
+
+    // Takes max dimension, check number of times it can be divided by 2 (std::log2) and then floor it if it's not a whole number.
+    // The +1 is just to make sure the base level is a 1 in case the other expression returns 0.
+    _mipLevels = static_cast< uint32_t >( std::floor( std::log2( std::max( texWidth, texHeight ) ) ) ) + 1;
 #else
-    std::runtime_error( "Image loader not supported!") ;
+    std::runtime_error( "Image loader not supported in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) ) ;
 #endif // STB_IMAGE_IMPLEMENTATION
 
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if( !pixels ) {
-      throw std::runtime_error( "failed to load texture image!" );
+      throw std::runtime_error( "failed to load texture image in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     VkBuffer stagingBuffer;
@@ -1522,21 +1529,29 @@ private:
     stbi_image_free( pixels );
 
     // Create the image
-    createImage( static_cast<uint32_t>( texWidth ), static_cast< uint32_t >( texHeight ), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, _textureImage, _textureImageMemory );
+    createImage( static_cast<uint32_t>( texWidth ),
+                 static_cast< uint32_t >( texHeight ),
+                 _mipLevels,
+                 VK_FORMAT_R8G8B8A8_SRGB,
+                 VK_IMAGE_TILING_OPTIMAL,
+                 VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                 _textureImage,
+                 _textureImageMemory );
 
     // Transition the image layout
-    transitionImageLayout( _textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
+    transitionImageLayout( _textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, _mipLevels );
 
     copyBufferToImage( stagingBuffer, _textureImage, static_cast< uint32_t >( texWidth ), static_cast< uint32_t > ( texHeight ) );
 
-    transitionImageLayout( _textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+    generateMipmaps( _textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, _mipLevels );
 
     vkDestroyBuffer( _logicalDevice, stagingBuffer, nullptr );
     vkFreeMemory( _logicalDevice, stagingBufferMemory, nullptr );
   }
 
   // Creates an image.
-  void createImage( uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+  void createImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
     // Create an image
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1544,7 +1559,7 @@ private:
     imageInfo.extent.width = width;
     imageInfo.extent.height = height;
     imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1; // No mip-levels
+    imageInfo.mipLevels = mipLevels;
     imageInfo.arrayLayers = 1;
     imageInfo.format = format; // Same format as the pixels in the buffer
     imageInfo.tiling = tiling;
@@ -1555,7 +1570,7 @@ private:
     imageInfo.flags = 0; // Optional
 
     if( vkCreateImage( _logicalDevice, &imageInfo, nullptr, &image ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create image!" );
+      throw std::runtime_error( "failed to create image in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     VkMemoryRequirements memRequirements;
@@ -1567,7 +1582,7 @@ private:
     allocInfo.memoryTypeIndex = findMemoryType( memRequirements.memoryTypeBits, properties );
 
     if( vkAllocateMemory( _logicalDevice, &allocInfo, nullptr, &imageMemory ) != VK_SUCCESS ) {
-      throw std::runtime_error( "Failed to allocate image memory" );
+      throw std::runtime_error( "Failed to allocate image memory in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     vkBindImageMemory( _logicalDevice, image, imageMemory, 0 );
@@ -1582,7 +1597,9 @@ private:
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers( _logicalDevice, &allocInfo, &commandBuffer );
+    if( vkAllocateCommandBuffers( _logicalDevice, &allocInfo, &commandBuffer ) != VK_SUCCESS ) {
+      throw std::runtime_error( "Failed to allocate command buffers in " + static_cast<std::string>(__FUNCTION__) + " " + std::to_string( __LINE__ ) );
+    }
 
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1603,14 +1620,16 @@ private:
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit( _graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE );
+    if( vkQueueSubmit( _graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE ) != VK_SUCCESS ) {
+      throw std::runtime_error( "Failed to submit to queue in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
+    }
     vkQueueWaitIdle( _graphicsQueue );
 
     vkFreeCommandBuffers( _logicalDevice, _commandPool, 1, &commandBuffer );
   }
 
   // Transitions image and format from an old layout to a new one using a command buffer and barrier.
-  void transitionImageLayout( VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout ) {
+  void transitionImageLayout( VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels ) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier = {};
@@ -1622,7 +1641,7 @@ private:
     barrier.image = image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = mipLevels;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
@@ -1642,7 +1661,7 @@ private:
       sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
       destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     } else {
-      throw std::runtime_error( "Unsupported layout transition!" );
+      throw std::runtime_error( "Unsupported layout transition in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     vkCmdPipelineBarrier( commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier );
@@ -1672,11 +1691,11 @@ private:
 
   // Creates image views to be used for textures.
   void createTextureImageView() {
-    _textureImageView = createImageView( _textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT );
+    _textureImageView = createImageView( _textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, _mipLevels );
   }
 
   // Creates an image view with a given format, and returns it.
-  VkImageView createImageView( VkImage image, VkFormat format, VkImageAspectFlags aspectFlags ) {
+  VkImageView createImageView( VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels ) {
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
@@ -1684,13 +1703,13 @@ private:
     viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.levelCount = mipLevels;
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
     VkImageView imageView;
     if( vkCreateImageView( _logicalDevice, &viewInfo, nullptr, &imageView ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create texture image view!" );
+      throw std::runtime_error( "failed to create texture image view in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
 
     return imageView;
@@ -1713,11 +1732,13 @@ private:
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     samplerInfo.mipLodBias = 0.0f;
+    // To see the different mip-map levels, set the minLod to the level you're
+    // interested in, and the minLod and maxLod to that specific level.
     samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 0.0f;
+    samplerInfo.maxLod = static_cast<float>( _mipLevels );
 
     if( vkCreateSampler( _logicalDevice, &samplerInfo, nullptr, &_textureSampler ) != VK_SUCCESS ) {
-      throw std::runtime_error( "failed to create texture sampler!" );
+      throw std::runtime_error( "failed to create texture sampler in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
     }
   }
 
@@ -1728,13 +1749,14 @@ private:
 
     createImage( _swapChainExtent.width,
                  _swapChainExtent.height,
+                 1,
                  depthFormat,
                  VK_IMAGE_TILING_OPTIMAL,
                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                  _depthImage,
                  _depthImageMemory );
-    _depthImageView = createImageView( _depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
+    _depthImageView = createImageView( _depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1 );
 
     // No need to map or copy any any image to a depth attachment here
     // because we'll be clearing it at the start of the render pass anyways.
@@ -1756,7 +1778,7 @@ private:
     }
 
     // Only bufferFeatures available, throw error.
-    throw std::runtime_error( "Failed to find supported format!" );
+    throw std::runtime_error( "Failed to find supported format in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
   }
 
   // Finds an appropriate depth format.
@@ -1812,6 +1834,100 @@ private:
     }
   }
 
+  // Generates mipmap images.
+  void generateMipmaps( VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels ) {
+
+    // Can't generate mip-maps if linear blitting not supported. Check for that.
+    VkFormatProperties formatProperties;
+    vkGetPhysicalDeviceFormatProperties( _physicalDevice, imageFormat, &formatProperties );
+
+    if( !( formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT ) ) {
+      throw std::runtime_error( "texture image format does not support linear blitting in " + static_cast< std::string >( __FUNCTION__ ) + " " + std::to_string( __LINE__ ) );
+    }
+
+    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+    // Create an image barrier to synchronize the different parts of this operation.
+    VkImageMemoryBarrier barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.image = image;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.levelCount = 1;
+
+    int mipWidth = texWidth;
+    int mipHeight = texHeight;
+
+    for( uint32_t i = 1; i < mipLevels; i++ ) {
+      barrier.subresourceRange.baseMipLevel = i - 1;
+      barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+      barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+      barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+      // Transfer the mip level i - 1 from dst optimal to src optimal
+      vkCmdPipelineBarrier( commandBuffer,
+                            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                            0, nullptr,
+                            0, nullptr,
+                            1, &barrier );
+
+      VkImageBlit blit = {};
+      blit.srcOffsets[0] = { 0, 0, 0 };
+      blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+      blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      blit.srcSubresource.mipLevel = i - 1;
+      blit.srcSubresource.baseArrayLayer = 0;
+      blit.srcSubresource.layerCount = 1;
+      blit.dstOffsets[0] = { 0, 0, 0 };
+      blit.dstOffsets[1] = { ( mipWidth > 1 ? mipWidth / 2 : 1 ), ( mipHeight > 1 ? mipHeight / 2 : 1 ), 1 };
+      blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      blit.dstSubresource.mipLevel = i;
+      blit.dstSubresource.baseArrayLayer = 0;
+      blit.dstSubresource.layerCount = 1;
+
+      vkCmdBlitImage( commandBuffer,
+        image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1, &blit,
+        VK_FILTER_LINEAR );
+
+      barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+      barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+      barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+      // Transfer layout from src optimal to read only by shader.
+      vkCmdPipelineBarrier( commandBuffer,
+        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier );
+
+      // Update the mipWdith and mipHeight to half size for each iteration
+      if( mipWidth > 1 ) mipWidth /= 2;
+      if( mipHeight > 1 ) mipHeight /= 2;
+    }
+
+    barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+    // Transfer the last mip level (since the loop started at index 1)
+    vkCmdPipelineBarrier( commandBuffer,
+      VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+      0, nullptr,
+      0, nullptr,
+      1, &barrier );
+
+    endSingleTimeCommands( commandBuffer );
+  }
+
   // --- Member variables ---
   GLFWwindow* _window;
   VkInstance _instance;
@@ -1822,6 +1938,7 @@ private:
   VkQueue _presentationQueue;
 
   // For texture support
+  uint32_t _mipLevels;
   VkImage _textureImage;
   VkDeviceMemory _textureImageMemory;
   VkImageView _textureImageView;
