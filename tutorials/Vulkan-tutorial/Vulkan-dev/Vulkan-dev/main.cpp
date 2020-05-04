@@ -158,7 +158,8 @@ public:
     _window( nullptr ),
     _physicalDevice( VK_NULL_HANDLE ),
     _currentFrame(0),
-    _framebufferResized(false) {};
+    _framebufferResized(false),
+    _msaaSamples( VK_SAMPLE_COUNT_1_BIT ) {};
 
   void run() {
     initWindow();
@@ -216,6 +217,7 @@ private:
     createDescriptorSetLayout();
     createGraphicsPipeline();
     createCommandPools();
+    createColorResources();
     createDepthResources();
     createFramebuffers();
     createTextureImage();
@@ -388,6 +390,7 @@ private:
     }
 
     _physicalDevice = physicalDevice;
+    _msaaSamples = getMaxUsableSampleCount();
   }
 
   // Checks whether a physical device is suitable to use together with the instance.
@@ -745,7 +748,7 @@ private:
     VkPipelineMultisampleStateCreateInfo multisampling = {};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisampling.rasterizationSamples = _msaaSamples;
     multisampling.minSampleShading = 1.0f; // Optional
     multisampling.pSampleMask = nullptr; // Optional
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
@@ -898,13 +901,13 @@ private:
   void createRenderPass() {
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.format = _swapChainImageFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear before loading the data
+    colorAttachment.samples = _msaaSamples;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference colorAttachmentRef = {};
     colorAttachmentRef.attachment = 0; // Specifies the index in the renderPassInfo.pAttachments array created later.
@@ -912,8 +915,8 @@ private:
 
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.format = findDepthFormat();
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear before loading the data
+    depthAttachment.samples = _msaaSamples;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -924,11 +927,26 @@ private:
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentDescription colorAttachmentResolve{};
+    colorAttachmentResolve.format = _swapChainImageFormat;
+    colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference colorAttachmentResolveRef = {};
+    colorAttachmentResolveRef.attachment = 2; // Specifies the index in the renderPassInfo.pAttachments array created later.
+    colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
     // Graphics subpass. Other values could be a compute subpass, for instance.
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pResolveAttachments = &colorAttachmentResolveRef;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
     // subpass.depthAttachmentCount = 1;  This option doesn't exist, you can only have a single depth (+stencil) attachment.
 
@@ -940,7 +958,7 @@ private:
     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -962,7 +980,7 @@ private:
 
     for( size_t i = 0; i < _swapChainImageViews.size(); i++ ) {
       // Create a framebuffer for each imageView.
-      std::array<VkImageView, 2> attachments = { _swapChainImageViews[i], _depthImageView };
+      std::array<VkImageView, 3> attachments = { _colorImageView, _depthImageView, _swapChainImageViews[i] };
 
       VkFramebufferCreateInfo framebufferInfo = {};
       framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1052,7 +1070,7 @@ private:
       vkCmdBindDescriptorSets( _commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[i], 0, VK_NULL_HANDLE );
 
       // Draw.
-      vkCmdDrawIndexed( _commandBuffers[i], static_cast< uint32_t >( indices.size() ), 1, 0, 0, 0 );
+      vkCmdDrawIndexed( _commandBuffers[i], static_cast< uint32_t >( _indices.size() ), 1, 0, 0, 0 );
 
       // Used when not using index buffers.
       //vkCmdDraw( _commandBuffers[i],
@@ -1208,6 +1226,7 @@ private:
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createColorResources();
     createDepthResources();
     createFramebuffers();
     createUniformBuffers();
@@ -1220,6 +1239,9 @@ private:
   void cleanupSwapChain() {
     const VkAllocationCallbacks* allocator = VK_NULL_HANDLE;
 
+    vkDestroyImageView( _logicalDevice, _colorImageView, allocator );
+    vkDestroyImage( _logicalDevice, _colorImage, allocator );
+    vkFreeMemory( _logicalDevice, _colorImageMemory, allocator );
     vkDestroyImageView( _logicalDevice, _depthImageView, allocator );
     vkDestroyImage( _logicalDevice, _depthImage, allocator );
     vkFreeMemory( _logicalDevice, _depthImageMemory, allocator );
@@ -1251,7 +1273,7 @@ private:
   // Creates a vertex buffer.
   void createVertexBuffer() {
 
-    VkDeviceSize bufferSize = sizeof( vertices[0] ) * vertices.size();
+    VkDeviceSize bufferSize = sizeof( _vertices[0] ) * _vertices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -1264,7 +1286,7 @@ private:
     // and finally unmaps the data pointer.
     void* data;
     vkMapMemory(_logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data );
-    memcpy( data, vertices.data(), static_cast< size_t >( bufferSize ) );
+    memcpy( data, _vertices.data(), static_cast< size_t >( bufferSize ) );
     vkUnmapMemory( _logicalDevice, stagingBufferMemory );
 
     // Creates a vertex buffer on device memory, the most optimal memory area most efficient for device access.
@@ -1336,7 +1358,7 @@ private:
 
   // Creates index buffers to use for rendering.
   void createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof( indices[0] ) * indices.size();
+    VkDeviceSize bufferSize = sizeof( _indices[0] ) * _indices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -1347,7 +1369,7 @@ private:
     // Copy the data from the indices to the stagingBuffer.
     void* data;
     vkMapMemory( _logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data );
-    memcpy( data, indices.data(), ( size_t )bufferSize );
+    memcpy( data, _indices.data(), ( size_t )bufferSize );
     vkUnmapMemory( _logicalDevice, stagingBufferMemory );
 
     // Create the index buffer.
@@ -1532,6 +1554,7 @@ private:
     createImage( static_cast<uint32_t>( texWidth ),
                  static_cast< uint32_t >( texHeight ),
                  _mipLevels,
+      VK_SAMPLE_COUNT_1_BIT,
                  VK_FORMAT_R8G8B8A8_SRGB,
                  VK_IMAGE_TILING_OPTIMAL,
                  VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -1551,7 +1574,16 @@ private:
   }
 
   // Creates an image.
-  void createImage( uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+  void createImage( uint32_t width,
+                    uint32_t height,
+                    uint32_t mipLevels,
+                    VkSampleCountFlagBits numSamples,
+                    VkFormat format,
+                    VkImageTiling tiling,
+                    VkImageUsageFlags usage,
+                    VkMemoryPropertyFlags properties,
+                    VkImage& image,
+                    VkDeviceMemory& imageMemory) {
     // Create an image
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1566,7 +1598,7 @@ private:
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = usage;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.samples = numSamples;
     imageInfo.flags = 0; // Optional
 
     if( vkCreateImage( _logicalDevice, &imageInfo, nullptr, &image ) != VK_SUCCESS ) {
@@ -1750,6 +1782,7 @@ private:
     createImage( _swapChainExtent.width,
                  _swapChainExtent.height,
                  1,
+                 _msaaSamples,
                  depthFormat,
                  VK_IMAGE_TILING_OPTIMAL,
                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -1824,12 +1857,12 @@ private:
         if( uniqueVertices.count( vertex ) == 0 ) {
           // If this vertex is unique, add its index to the map. This is to avoid
           // duplicate vertices. Also add the vertex to the vertices vector.
-          uniqueVertices[vertex] = static_cast< uint32_t >( vertices.size() );
-          vertices.push_back( vertex );
+          uniqueVertices[vertex] = static_cast< uint32_t >( _vertices.size() );
+          _vertices.push_back( vertex );
         }
 
         // Look up the index of the vertex in the map and get the value.
-        indices.push_back( uniqueVertices[vertex] );
+        _indices.push_back( uniqueVertices[vertex] );
       }
     }
   }
@@ -1928,6 +1961,41 @@ private:
     endSingleTimeCommands( commandBuffer );
   }
 
+  VkSampleCountFlagBits getMaxUsableSampleCount() {
+    VkPhysicalDeviceProperties physicalDeviceProperties;
+    vkGetPhysicalDeviceProperties( _physicalDevice, &physicalDeviceProperties );
+
+    // Check sample limit both for color and depth
+    VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+    if( counts & VK_SAMPLE_COUNT_64_BIT ) { return VK_SAMPLE_COUNT_64_BIT; }
+    if( counts & VK_SAMPLE_COUNT_32_BIT ) { return VK_SAMPLE_COUNT_32_BIT; }
+    if( counts & VK_SAMPLE_COUNT_16_BIT ) { return VK_SAMPLE_COUNT_16_BIT; }
+    if( counts & VK_SAMPLE_COUNT_8_BIT ) { return VK_SAMPLE_COUNT_8_BIT; }
+    if( counts & VK_SAMPLE_COUNT_4_BIT ) { return VK_SAMPLE_COUNT_4_BIT; }
+    if( counts & VK_SAMPLE_COUNT_2_BIT ) { return VK_SAMPLE_COUNT_2_BIT; }
+
+    return VK_SAMPLE_COUNT_1_BIT;
+  }
+
+  // Creates color images to use for MSAA.
+  void createColorResources() {
+    VkFormat colorFormat = _swapChainImageFormat;
+
+    // Create image to use for MSAA.
+    createImage( _swapChainExtent.width,
+                 _swapChainExtent.height,
+                 1,
+                 _msaaSamples,
+                 colorFormat,
+                 VK_IMAGE_TILING_OPTIMAL,
+                 VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                 _colorImage,
+                 _colorImageMemory );
+
+    _colorImageView = createImageView( _colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1 );
+  }
+
   // --- Member variables ---
   GLFWwindow* _window;
   VkInstance _instance;
@@ -1974,12 +2042,18 @@ private:
   std::vector<VkDeviceMemory> _uniformBuffersMemory;
 
   // Model variables
-  std::vector<Vertex> vertices;
-  std::vector<uint32_t> indices;
+  std::vector<Vertex> _vertices;
+  std::vector<uint32_t> _indices;
 
   // Misc
   size_t _currentFrame;
   bool _framebufferResized;
+  VkSampleCountFlagBits _msaaSamples;
+
+  // MSAA variables
+  VkImage _colorImage;
+  VkDeviceMemory _colorImageMemory;
+  VkImageView _colorImageView;
 
   // Synchronization variables
   std::vector<VkSemaphore> _imageAvailableSemaphore;
