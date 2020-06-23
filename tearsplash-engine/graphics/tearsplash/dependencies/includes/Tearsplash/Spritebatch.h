@@ -20,8 +20,42 @@ namespace Tearsplash
         TEXTURE
     };
 
-    struct Glyph
+    class Glyph
     {
+    public:
+        Glyph() {};
+        Glyph(const glm::vec4& _destRect, const glm::vec4& _uvRect, GLuint _texture, int _depth, const ColorRGBA8& _color) :
+            texture(_texture), depth(_depth){
+
+            //
+            // ------------
+            // |          |
+            // |  sprite  | l.y
+            // |          |
+            // ------------
+            //     l.x
+
+            // Bottom left = DestRect(x,y)
+            // l.x = destRect.z/uvRect.z (side length)
+            // l.y = destRect.w/uvRect.w (side length)
+
+            topLeft.setColor(_color.r, _color.g, _color.b, _color.a);
+            topLeft.setPosition(_destRect.x, _destRect.y + _destRect.w);
+            topLeft.setUV(_uvRect.x, _uvRect.y + _uvRect.w);
+
+            topRight.setColor(_color.r, _color.g, _color.b, _color.a);
+            topRight.setPosition(_destRect.x + _destRect.z, _destRect.y + _destRect.w);
+            topRight.setUV(_uvRect.x + _uvRect.z, _uvRect.y + _uvRect.w);
+
+            bottomLeft.setColor(_color.r, _color.g, _color.b, _color.a);
+            bottomLeft.setPosition(_destRect.x, _destRect.y);
+            bottomLeft.setUV(_uvRect.x, _uvRect.y);
+
+            bottomRight.setColor(_color.r, _color.g, _color.b, _color.a);
+            bottomRight.setPosition(_destRect.x + _destRect.z, _destRect.y);
+            bottomRight.setUV(_uvRect.x + _uvRect.z, _uvRect.y);
+        };
+
         GLuint texture;
         int depth;
 
@@ -59,7 +93,8 @@ namespace Tearsplash
         void createRenderBatches();
         void sortGlyphs();
 
-        std::vector<Glyph*> mGlyphs;
+        std::vector<Glyph*> mGlyphPointers;
+        std::vector<Glyph> mGlyphs;
         std::vector<RenderBatch> mRenderBatches;
 
         GlyphSortType mSortType;

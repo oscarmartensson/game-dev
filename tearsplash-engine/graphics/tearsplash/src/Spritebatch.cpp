@@ -30,54 +30,22 @@ void Spritebatch::begin(GlyphSortType sortType)
 {
     mSortType = sortType;
     mRenderBatches.clear();
-    for (size_t i = 0; i < mGlyphs.size(); i++)
-    {
-        delete mGlyphs[i];
-    }
     mGlyphs.clear();
 }
 
 void Spritebatch::end() 
 {
+    mGlyphPointers.resize(mGlyphs.size());
+    for (int i = 0; i < mGlyphPointers.size(); i++) {
+        mGlyphPointers[i] = &mGlyphs[i];
+    }
     sortGlyphs();
     createRenderBatches();
 }
 
 void Spritebatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const ColorRGBA8& color)
 {
-    Glyph* newGlyph = new Glyph;
-    newGlyph->texture = texture;
-    newGlyph->depth = depth;
-
-    //
-    // ------------
-    // |          |
-    // |  sprite  | l.y
-    // |          |
-    // ------------
-    //     l.x
-
-    // Bottom left = DestRect(x,y)
-    // l.x = destRect.z/uvRect.z (side length)
-    // l.y = destRect.w/uvRect.w (side length)
-
-    newGlyph->topLeft.setColor(color.r, color.g, color.b, color.a);
-    newGlyph->topLeft.setPosition(destRect.x, destRect.y + destRect.w);
-    newGlyph->topLeft.setUV(uvRect.x, uvRect.y + uvRect.w);
-
-    newGlyph->topRight.setColor(color.r, color.g, color.b, color.a);
-    newGlyph->topRight.setPosition(destRect.x + destRect.z, destRect.y + destRect.w);
-    newGlyph->topRight.setUV(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
-
-    newGlyph->bottomLeft.setColor(color.r, color.g, color.b, color.a);
-    newGlyph->bottomLeft.setPosition(destRect.x, destRect.y);
-    newGlyph->bottomLeft.setUV(uvRect.x, uvRect.y);
-
-    newGlyph->bottomRight.setColor(color.r, color.g, color.b, color.a);
-    newGlyph->bottomRight.setPosition(destRect.x + destRect.z, destRect.y);
-    newGlyph->bottomRight.setUV(uvRect.x + uvRect.z, uvRect.y);
-
-    mGlyphs.push_back(newGlyph);
+    mGlyphs.emplace_back(destRect, uvRect, texture, depth, color);
 }
 
 void Spritebatch::createVertexArray()
@@ -115,15 +83,15 @@ void Spritebatch::sortGlyphs()
     switch (mSortType)
     {
         case GlyphSortType::BACK_TO_FRONT:
-            std::sort(mGlyphs.begin(), mGlyphs.end(), [](const Glyph* a, const Glyph* b) { return a->depth > b->depth; });
+            std::sort(mGlyphPointers.begin(), mGlyphPointers.end(), [](const Glyph* a, const Glyph* b) { return a->depth > b->depth; });
             break;
 
         case GlyphSortType::FRONT_TO_BACK:
-            std::sort(mGlyphs.begin(), mGlyphs.end(), [](const Glyph* a, const Glyph* b) { return a->depth < b->depth; });
+            std::sort(mGlyphPointers.begin(), mGlyphPointers.end(), [](const Glyph* a, const Glyph* b) { return a->depth < b->depth; });
             break;
 
         case GlyphSortType::TEXTURE:
-            std::sort(mGlyphs.begin(), mGlyphs.end(), [](const Glyph* a, const Glyph* b) { return a->texture < b->texture; });
+            std::sort(mGlyphPointers.begin(), mGlyphPointers.end(), [](const Glyph* a, const Glyph* b) { return a->texture < b->texture; });
             break;
 
         case GlyphSortType::NONE:
@@ -165,33 +133,33 @@ void Spritebatch::createRenderBatches()
     int currentVertex = 0;
 
     // Constructs a new render batch with arguments and pushes to back in vector mRenderBatches
-    mRenderBatches.emplace_back(0, 6, mGlyphs[0]->texture);
-    vertices[currentVertex++] = mGlyphs[0]->topLeft; // Increments currentVertex after vector assignment
-    vertices[currentVertex++] = mGlyphs[0]->bottomLeft;
-    vertices[currentVertex++] = mGlyphs[0]->bottomRight;
-    vertices[currentVertex++] = mGlyphs[0]->bottomRight;
-    vertices[currentVertex++] = mGlyphs[0]->topRight;
-    vertices[currentVertex++] = mGlyphs[0]->topLeft;
+    mRenderBatches.emplace_back(0, 6, mGlyphPointers[0]->texture);
+    vertices[currentVertex++] = mGlyphPointers[0]->topLeft; // Increments currentVertex after vector assignment
+    vertices[currentVertex++] = mGlyphPointers[0]->bottomLeft;
+    vertices[currentVertex++] = mGlyphPointers[0]->bottomRight;
+    vertices[currentVertex++] = mGlyphPointers[0]->bottomRight;
+    vertices[currentVertex++] = mGlyphPointers[0]->topRight;
+    vertices[currentVertex++] = mGlyphPointers[0]->topLeft;
     offset += 6;
 
-    for (size_t currentGlyph = 1; currentGlyph < mGlyphs.size(); currentGlyph++)
+    for (size_t currentGlyph = 1; currentGlyph < mGlyphPointers.size(); currentGlyph++)
     {
-        if (mGlyphs[currentGlyph]->texture != mGlyphs[currentGlyph - 1]->texture)
+        if (mGlyphPointers[currentGlyph]->texture != mGlyphPointers[currentGlyph - 1]->texture)
         {
             // Only push if new texture is present
-            mRenderBatches.emplace_back(offset, 6, mGlyphs[currentGlyph]->texture);
+            mRenderBatches.emplace_back(offset, 6, mGlyphPointers[currentGlyph]->texture);
         }
         else
         {
             mRenderBatches.back().mNumVertices += 6;
         }
 
-        vertices[currentVertex++] = mGlyphs[currentGlyph]->topLeft;
-        vertices[currentVertex++] = mGlyphs[currentGlyph]->bottomLeft;
-        vertices[currentVertex++] = mGlyphs[currentGlyph]->bottomRight;
-        vertices[currentVertex++] = mGlyphs[currentGlyph]->bottomRight;
-        vertices[currentVertex++] = mGlyphs[currentGlyph]->topRight;
-        vertices[currentVertex++] = mGlyphs[currentGlyph]->topLeft;
+        vertices[currentVertex++] = mGlyphPointers[currentGlyph]->topLeft;
+        vertices[currentVertex++] = mGlyphPointers[currentGlyph]->bottomLeft;
+        vertices[currentVertex++] = mGlyphPointers[currentGlyph]->bottomRight;
+        vertices[currentVertex++] = mGlyphPointers[currentGlyph]->bottomRight;
+        vertices[currentVertex++] = mGlyphPointers[currentGlyph]->topRight;
+        vertices[currentVertex++] = mGlyphPointers[currentGlyph]->topLeft;
         offset += 6;
     }
 

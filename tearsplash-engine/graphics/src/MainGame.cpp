@@ -181,7 +181,7 @@ void MainGame::processInput()
         mCamera.setScale(mCamera.getScale() + SCALE_SPEED);
     }
 
-    if (mInputManager.isKeyPressed(SDL_BUTTON_LEFT))
+    if (mInputManager.isKeyPressed(SDLK_f))
     {
         glm::vec2 mouseCoords = mInputManager.getMouseCoords();
         mouseCoords = mCamera.convertScreen2World(mouseCoords);
@@ -229,10 +229,12 @@ void MainGame::render()
     color.b = 255;
     color.a = 255;
 
+    // Draw the player sprite.
     mSpritebatch.draw(pos, uv, texture.id, 0, color);
 
     for (size_t i = 0; i < mBullets.size(); i++)
     {
+        // Render the bullets to the sprite batch.
         mBullets[i].draw(mSpritebatch);
     }
 

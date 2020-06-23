@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Tearsplash/Utils.h"
+
 namespace Tearsplash
 {
 
@@ -17,6 +19,8 @@ namespace Tearsplash
 
         void init(int screenWidth, int screenHeight);
         void update();
+
+        bool isInView(const glm::vec2& position, const glm::vec2& dimensions);
 
         glm::vec2 convertScreen2World(glm::vec2& screenCoords);
 
