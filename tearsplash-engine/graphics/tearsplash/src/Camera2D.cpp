@@ -19,7 +19,10 @@ using namespace Tearsplash;
 Camera2D::Camera2D() : mPosition(0, 0), mCameraMatrix(1.0), mScale(1.0f), mNeedsMatrixUpdate(true), mScreenWidth(480), mScreenHeight(480), mOrthoMatrix(0.0f)
 {
     // Create identity matrix
-    mCameraMatrix = glm::mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    mCameraMatrix = glm::mat4(1, 0, 0, 0,
+                              0, 1, 0, 0,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1);
 }
 
 
@@ -51,17 +54,19 @@ void Camera2D::update()
 
 // Check if the camera rectangle is colliding with an AABB, i.e. if the primitive is within the camera frustrum.
 // Returns true if the primitive is within the camera frustrum, false otherwise.
+// The position is assumed to in the center of the object, and the dimensions is the size of the collider
+// surrounding the primitive.
 bool Camera2D::isInView(const glm::vec2& position, const glm::vec2& dimensions) {
 
     const glm::vec2 scaledScreenDimensions = glm::vec2(mScreenWidth, mScreenHeight) / mScale;
 
     // Calculate the minimum distance between the primitive and the camera for them to be considered seperated.
-    // The position of the primitive is assumed to be in the lower left bottom.
+    // The position of the primitive is assumed to be in the center.
     const float minX = dimensions.x * 0.5f + scaledScreenDimensions.x * 0.5f;
     const float minY = dimensions.y * 0.5f + scaledScreenDimensions.y * 0.5f;
 
     // Center of the primitive.
-    const glm::vec2 centerPos = position + 0.5f * dimensions;
+    const glm::vec2 centerPos = position;
 
     // Distance from camera center to primitive center. Camera position is already centered.
     const float xDistance = centerPos.x - mPosition.x;

@@ -17,11 +17,21 @@ public:
     // Returns true when lifetime is up
     bool update();
 
+    glm::vec2 getPosition() const {
+        return mPos;
+    }
+
+    glm::vec2 getAABB() const {
+        return mAABB;
+    }
+
 private:
     float mSpeed;
     int mLifeTime;
     glm::vec2 mUnitDir;;
+    glm::vec2 mSize;
     glm::vec2 mPos;
+    glm::vec2 mAABB;
 };
 
 #endif // !PROJECTILE_H

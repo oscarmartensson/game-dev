@@ -185,7 +185,7 @@ void MainGame::processInput()
     {
         glm::vec2 mouseCoords = mInputManager.getMouseCoords();
         mouseCoords = mCamera.convertScreen2World(mouseCoords);
-        std::cout << mouseCoords.x << " " << mouseCoords.y << std::endl;
+        //std::cout << mouseCoords.x << " " << mouseCoords.y << std::endl;
 
         glm::vec2 playerPosition(0.0f);
         glm::vec2 direction = mouseCoords - playerPosition;
@@ -235,7 +235,9 @@ void MainGame::render()
     for (size_t i = 0; i < mBullets.size(); i++)
     {
         // Render the bullets to the sprite batch.
-        mBullets[i].draw(mSpritebatch);
+        if (mCamera.isInView(mBullets[i].getPosition(), mBullets[i].getAABB())) {
+            mBullets[i].draw(mSpritebatch);
+        }
     }
 
     // Stop filling sprite batches

@@ -12,8 +12,9 @@
 #include "Projectile.h"
 
 #include <Tearsplash/ResourceManager.h>
+#include <Tearsplash/Camera2D.h>
 
-Projectile::Projectile(glm::vec2 pos, glm::vec2 dir, float speed, int lifetime) : mPos(pos), mUnitDir(dir), mSpeed(speed), mLifeTime(lifetime) {}
+Projectile::Projectile(glm::vec2 pos, glm::vec2 dir, float speed, int lifetime) : mPos(pos), mUnitDir(dir), mSpeed(speed), mLifeTime(lifetime), mAABB(glm::vec2(mPos.x, mPos.y)), mSize(glm::vec2(30.0f, 30.0f)){}
 Projectile::~Projectile() {}
 
 
@@ -27,7 +28,7 @@ void Projectile::draw(Tearsplash::Spritebatch& spriteBatch)
     color.b = 255;
     color.a = 255;
 
-    spriteBatch.draw(glm::vec4(mPos, 30.0f, 30.0f), uv, texture.id, 0, color);
+    spriteBatch.draw(glm::vec4(mPos, mSize.x, mSize.y), uv, texture.id, 0, color);
 }
 
 bool Projectile::update()
@@ -38,6 +39,9 @@ bool Projectile::update()
         mLifeTime = 0;
         return true;
     }
+
+    mAABB.x = mSize.x;
+    mAABB.y = mSize.y;
 
     return false;
 }
