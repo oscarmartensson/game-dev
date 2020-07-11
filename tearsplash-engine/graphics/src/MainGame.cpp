@@ -35,7 +35,7 @@ MainGame::MainGame() :
 // Default destructor
 MainGame::~MainGame()
 {
-	// Do nothing
+    mAudioEngine.destroy();
 }
 
 // ----------------------------------
@@ -53,6 +53,8 @@ void MainGame::run()
 void MainGame::initSystems()
 {
 	Tearsplash::init();
+    mAudioEngine.init();
+
     mFPSLimiter.init(mMaxFPS);
 
 	mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
@@ -191,7 +193,9 @@ void MainGame::processInput()
         glm::vec2 direction = mouseCoords - playerPosition;
         direction = glm::normalize(direction);
 
-        mBullets.emplace_back(playerPosition, direction, 10.0f, 1000);
+        // This is really ugly, should not try to load the sound effect every time a bullet is fired.
+        mBullets.emplace_back(playerPosition, direction, 10.0f, 1000, mAudioEngine.loadSoundEffect("sound/shots/pistol.wav"));
+        mBullets.back().playSoundFX();
     }
 }
 

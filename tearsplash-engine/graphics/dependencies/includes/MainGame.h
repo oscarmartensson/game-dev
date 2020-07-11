@@ -26,6 +26,7 @@
 #include <Tearsplash/Spritebatch.h>
 #include <Tearsplash/InputManager.h>
 #include <Tearsplash/Timing.h>
+#include <Tearsplash/AudioEngine.h>
 
 #include "Projectile.h"
 
@@ -55,6 +56,7 @@ private:
     Tearsplash::Spritebatch          mSpritebatch;
     Tearsplash::InputManager         mInputManager;
     Tearsplash::FPSLimiter           mFPSLimiter;
+	Tearsplash::AudioEngine          mAudioEngine;
     std::vector<Projectile>          mBullets;
 
     float							 mFPS;

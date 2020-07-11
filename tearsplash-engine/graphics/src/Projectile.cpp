@@ -14,7 +14,14 @@
 #include <Tearsplash/ResourceManager.h>
 #include <Tearsplash/Camera2D.h>
 
-Projectile::Projectile(glm::vec2 pos, glm::vec2 dir, float speed, int lifetime) : mPos(pos), mUnitDir(dir), mSpeed(speed), mLifeTime(lifetime), mAABB(glm::vec2(mPos.x, mPos.y)), mSize(glm::vec2(30.0f, 30.0f)){}
+Projectile::Projectile(glm::vec2 pos, glm::vec2 dir, float speed, int lifetime, Tearsplash::SoundEffect projectileSound) :
+    mPos(pos),
+    mUnitDir(dir),
+    mSpeed(speed),
+    mLifeTime(lifetime),
+    mAABB(glm::vec2(mPos.x, mPos.y)),
+    mSize(glm::vec2(30.0f, 30.0f)),
+    mProjectileSound(projectileSound){}
 Projectile::~Projectile() {}
 
 
