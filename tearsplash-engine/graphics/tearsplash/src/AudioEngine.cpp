@@ -58,7 +58,21 @@ void AudioEngine::init() {
 void AudioEngine::destroy() {
     if (mInitialized) {
         mInitialized = false;
+
+        // Free all allocated data.
+        for (auto& effect : mEffectMap) {
+            Mix_FreeChunk(effect.second);
+        }
+
+        for (auto& music : mMusicMap) {
+            Mix_FreeMusic(music.second);
+        }
+
+        Mix_CloseAudio();
         Mix_Quit();
+
+        mEffectMap.clear();
+        mMusicMap.clear();
     }
 }
 
