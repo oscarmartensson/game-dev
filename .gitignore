@@ -1,5 +1,7 @@
 # Ignore files in 
 **/.vs/**
+**/output_x64/**
+**/output_x86/**
 **/Debug/**
 **/x64/**
 **/Release/**
