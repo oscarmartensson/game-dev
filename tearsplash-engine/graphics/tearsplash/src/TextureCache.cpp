@@ -27,7 +27,8 @@ TextureCache::~TextureCache()
 }
 
 // ----------------------------------
-// Returns a GLTexture from the map structure if it exists
+// Returns a GLTexture from the map structure if it exists,
+// otherwise it adds the new texture to the map.
 GLTexture TextureCache::getTexture(std::string texturePath)
 {
 	// auto replaces std::map<std::string, GLTexture>::iterator
