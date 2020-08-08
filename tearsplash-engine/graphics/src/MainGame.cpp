@@ -62,6 +62,8 @@ void MainGame::initSystems()
 
 	initShaders();
     mSpritebatch.init();
+
+    mHUDText.init("../fonts/CaviarDreams.ttf");
 }
 
 // ----------------------------------
@@ -252,6 +254,10 @@ void MainGame::render()
 
 	// Stop using shader program
 	mColorShaders.dontuse();
+
+    // Render Text
+    mHUDText.drawText("This is a test", glm::vec4(100.0f, 100.0f, 0.0f, 0.0f), glm::ortho(0.0f, static_cast<float>(mWindowWidth), 0.0f, static_cast<float>(mWindowHeight)), glm::vec3(1.0f, 1.0f, 1.0f), 10.0f);
+    mHUDText.render();
 
 	mWindow.swapBuffer();
 }

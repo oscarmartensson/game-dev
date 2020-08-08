@@ -1,4 +1,4 @@
-#version 130
+#version 330
 
 // Input data
 in vec2 vertexPosition;

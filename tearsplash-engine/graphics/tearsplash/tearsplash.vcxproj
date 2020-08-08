@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)tearsplash/dependencies/includes/;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)tearsplash/dependencies/includes/;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)tearsplash/dependencies/includes/freetype;</IncludePath>
     <LibraryPath>$(SolutionDir)tearsplash/dependencies/libs/x86/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <SourcePath>$(SolutionDir)tearsplash/src/;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
@@ -107,7 +107,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;SDL2.lib;SDL2main.lib;SDL2_mixer.lib;freetype.lib;</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>
@@ -191,6 +191,7 @@
     <ClCompile Include="src\ShaderProgram.cpp" />
     <ClCompile Include="src\Sprite.cpp" />
     <ClCompile Include="src\Spritebatch.cpp" />
+    <ClCompile Include="src\Spritefont.cpp" />
     <ClCompile Include="src\Tearsplash.cpp" />
     <ClCompile Include="src\TextureCache.cpp" />
     <ClCompile Include="src\Timing.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="dependencies\includes\Tearsplash\ShaderProgram.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Sprite.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Spritebatch.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Spritefont.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Tearsplash.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\TextureCache.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Timing.h" />

@@ -1,4 +1,4 @@
-#version 130
+#version 330
 
 // From vertex shader. Important to use same name
 in vec2 position;
