@@ -63,7 +63,7 @@ void MainGame::initSystems()
 	initShaders();
     mSpritebatch.init();
 
-    mHUDText.init("../fonts/CaviarDreams.ttf");
+    mHUDText.init("fonts/28_Days_Later.ttf");
 }
 
 // ----------------------------------
