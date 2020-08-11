@@ -57,10 +57,10 @@
     <ClCompile Include="src\Timing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PhysicsObject.cpp">
+    <ClCompile Include="src\AudioEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\AudioEngine.cpp">
+    <ClCompile Include="src\Spritefont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -143,10 +143,10 @@
     <ClInclude Include="dependencies\includes\Tearsplash\Timing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dependencies\includes\Tearsplash\PhysicsObject.h">
+    <ClInclude Include="dependencies\includes\Tearsplash\AudioEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dependencies\includes\Tearsplash\AudioEngine.h">
+    <ClInclude Include="dependencies\includes\Tearsplash\Spritefont.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -180,7 +180,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AudioEngine.cpp" />
-    <ClCompile Include="src\PhysicsObject.cpp" />
     <ClCompile Include="src\Camera2D.cpp" />
     <ClCompile Include="src\Errors.cpp" />
     <ClCompile Include="src\ImageLoader.cpp" />
@@ -226,7 +225,6 @@
     <ClInclude Include="dependencies\includes\Tearsplash\Window.h" />
     <ClInclude Include="dependencies\includes\TextureCache.h" />
     <ClInclude Include="dependencies\includes\Vertex.h" />
-    <ClInclude Include="dependencies\includes\Tearsplash\PhysicsObject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

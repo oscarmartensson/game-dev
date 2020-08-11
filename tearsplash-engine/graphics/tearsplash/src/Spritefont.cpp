@@ -7,7 +7,7 @@ using namespace Tearsplash;
 
 Spritefont::Spritefont() :
 mPixelWidth(static_cast<FT_UInt>(0)),
-mPixelHeight(static_cast<FT_UInt>(0)) {}
+mPixelHeight(static_cast<FT_UInt>(48)) {}
 
 Spritefont::~Spritefont() {
     // Do nothing.
@@ -130,7 +130,7 @@ void Spritefont::init(const char* fontPath, unsigned int pixelWidth/*=0*/, unsig
     mSpritebatchText.init();
 
     // Setup the shaders to be used for this text.
-    mTextShader.compileShaders("../tearsplash/shaders/2DText.vert", "../tearsplash/shaders/2DText.frag");
+    mTextShader.compileShaders("tearsplash/shaders/2DText.vert", "tearsplash/shaders/2DText.frag");
     mTextShader.addAttribute("vertex");
     mTextShader.linkShaders();
 }

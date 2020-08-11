@@ -24,6 +24,7 @@
 #include <Tearsplash/Window.h>
 #include <Tearsplash/Camera2D.h>
 #include <Tearsplash/Spritebatch.h>
+#include <Tearsplash/Spritefont.h>
 #include <Tearsplash/InputManager.h>
 #include <Tearsplash/Timing.h>
 #include <Tearsplash/AudioEngine.h>
@@ -57,6 +58,7 @@ private:
     Tearsplash::InputManager         mInputManager;
     Tearsplash::FPSLimiter           mFPSLimiter;
 	Tearsplash::AudioEngine          mAudioEngine;
+    Tearsplash::Spritefont           mHUDText;
     std::vector<Projectile>          mBullets;
 
     float							 mFPS;
