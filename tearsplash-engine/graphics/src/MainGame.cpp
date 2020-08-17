@@ -256,7 +256,7 @@ void MainGame::render()
 	mColorShaders.dontuse();
 
     // Render Text
-    mHUDText.drawText("This is a test", glm::vec4(100.0f, 100.0f, 0.0f, 0.0f), glm::ortho(0.0f, static_cast<float>(mWindowWidth), 0.0f, static_cast<float>(mWindowHeight)), glm::vec3(1.0f, 1.0f, 1.0f), 10.0f);
+    mHUDText.drawText("hejsan sa", glm::vec4(100.0f, 0.0f, 0.0f, 0.0f), cameraMatrix, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     mHUDText.render();
 
 	mWindow.swapBuffer();

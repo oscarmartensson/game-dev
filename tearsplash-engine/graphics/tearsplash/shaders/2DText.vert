@@ -1,12 +1,17 @@
 #version 330 core
 
-layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
+in vec2 vertexPosition;
+in vec4 vertexColor;
+in vec2 vertexUV;
+
 out vec2 texCoords;
 
 uniform mat4 P;
 
 void main()
 {
-    gl_Position = P * vec4(vertex.xy, 0.0, 1.0);
-    texCoords = vertex.zw;
+    gl_Position.xy = (P * vec4(vertexPosition.xy, 0.0, 1.0)).xy;
+	gl_Position.z = 0.0;
+	gl_Position.w = 1.0;
+    texCoords = vec2(vertexUV.x, 1.0f -vertexUV.y); // negative v part to flip vertically 180 deg;
 } 

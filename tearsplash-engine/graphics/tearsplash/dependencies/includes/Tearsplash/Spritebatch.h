@@ -28,11 +28,11 @@ namespace Tearsplash
             texture(_texture), depth(_depth){
 
             //
-            // ------------
+            //  ----------
             // |          |
             // |  sprite  | l.y
             // |          |
-            // ------------
+            // 0,0 -------
             //     l.x
 
             // Bottom left = DestRect(x,y)
