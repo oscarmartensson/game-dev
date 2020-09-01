@@ -12,6 +12,7 @@
 
 // Includes -------------------------
 #include <string>
+#include <random>
 
 #include <Tearsplash/Errors.h>
 #include <Tearsplash/ImageLoader.h>
@@ -23,12 +24,12 @@
 // ----------------------------------
 // Default constructor
 MainGame::MainGame() : 
-	mCurrentGameState(GameState::PLAY), 
-	mWindowWidth(1280), mWindowHeight(720),  
-	mMaxFPS(60.0f),
-    mFPS(0.0f)
+	mCurrentGameState(GameState::PLAY),
+    mFPS(0.0f),
+    mMaxFPS(60.0f),
+	mWindowWidth(1280), mWindowHeight(720),
+	mGravity(0.0f, -9.82f)
 {
-	// Initialize member variables through MIL
 }
 
 // ----------------------------------
@@ -59,11 +60,14 @@ void MainGame::initSystems()
 
 	mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
     mCamera.init(mWindowWidth, mWindowHeight);
+    mCamera.setScale(2.0f);
 
 	initShaders();
     mSpritebatch.init();
 
     mHUDText.init("fonts/28_Days_Later.ttf");
+
+    createPhysicsObjects();
 }
 
 // ----------------------------------
@@ -94,7 +98,9 @@ void MainGame::gameLoop()
             }
         }
 
-		render();
+        updatePhysics();
+
+        render();
 
         mFPS = mFPSLimiter.end();
 
@@ -228,7 +234,7 @@ void MainGame::render()
 
     glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
     glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
-    static Tearsplash::GLTexture texture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+    static Tearsplash::GLTexture playerTexture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
     Tearsplash::ColorRGBA8 color;
     color.r = 255;
     color.g = 255;
@@ -236,7 +242,7 @@ void MainGame::render()
     color.a = 255;
 
     // Draw the player sprite.
-    mSpritebatch.draw(pos, uv, texture.id, 0, color);
+    mSpritebatch.draw(pos, uv, playerTexture.id, 0, color);
 
     for (size_t i = 0; i < mBullets.size(); i++)
     {
@@ -244,6 +250,19 @@ void MainGame::render()
         if (mCamera.isInView(mBullets[i].getPosition(), mBullets[i].getAABB())) {
             mBullets[i].draw(mSpritebatch);
         }
+    }
+
+    // Draw the physics boxes.
+    static Tearsplash::GLTexture brickTexture = Tearsplash::ResourceManager::getTexture("textures/01bricks1.png");
+    for (auto& box : mPhysicsBoxes) {
+        glm::vec4 destRect;
+        // Subtract half of the dimensions since the physics box origin is in the box center,
+        // but our draw center is in the corner.
+        destRect.x = box.getBody()->GetPosition().x - box.getDimensions().x * 0.5f;
+        destRect.y = box.getBody()->GetPosition().y - box.getDimensions().y * 0.5f;
+        destRect.z = box.getDimensions().x;
+        destRect.w = box.getDimensions().y;
+        mSpritebatch.draw(destRect, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), brickTexture.id, 0.0f, Tearsplash::ColorRGBA8(255, 255, 255, 255));
     }
 
     // Stop filling sprite batches
@@ -290,4 +309,27 @@ void MainGame::printFPS()
 		std::cout << "fps: " << mFPS << std::endl;
 		frameCounter = 0;
 	}
+}
+
+void MainGame::createPhysicsObjects()
+{
+    // Create the physics world.
+    mPhysicsWorld = std::make_unique<b2World>(mGravity);
+
+    // Create a static ground box.
+    Tearsplash::Box ground;
+    ground.init(mPhysicsWorld.get(), glm::vec2(0.0f, -10.0f), glm::vec2(100.0f, 15.0f));
+    // Don't add this to the mPhysicsBoxes since we don't want it rendered.
+    //mPhysicsBoxes.push_back(ground);
+
+    // Create a bunch of falling boxes.
+    Tearsplash::Box box;
+    box.init(mPhysicsWorld.get(), glm::vec2(0.0f, 100.0f), glm::vec2(15.0f, 15.0f), b2_dynamicBody);
+    mPhysicsBoxes.push_back(box);
+}
+
+void MainGame::updatePhysics()
+{
+    // Since we're locking the fps to 60, we'll use that as a timestep.
+    mPhysicsWorld->Step(1.0f / 60.0f, 6, 2);
 }

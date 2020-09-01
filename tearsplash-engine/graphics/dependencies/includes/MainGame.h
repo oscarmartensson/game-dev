@@ -16,6 +16,7 @@
 #include <SDL/SDL.h>	// Used for window and input
 
 #include <GL/glew.h>	// Used for OpenGL
+#include <Box2D/Box2D.h>
 
 // Tearsplash engine
 #include <Tearsplash/Tearsplash.h>
@@ -28,6 +29,7 @@
 #include <Tearsplash/InputManager.h>
 #include <Tearsplash/Timing.h>
 #include <Tearsplash/AudioEngine.h>
+#include <Tearsplash/Box.h>
 
 #include "Projectile.h"
 
@@ -48,6 +50,8 @@ private:
 	void processInput();
 	void render();
 	void printFPS();
+    void createPhysicsObjects();
+    void updatePhysics();
 
 	// Member variables
     GameState						 mCurrentGameState;
@@ -61,11 +65,14 @@ private:
     Tearsplash::Spritefont           mHUDText;
     std::vector<Projectile>          mBullets;
 
-    float							 mFPS;
-    float							 mMaxFPS;
-	int								 mWindowWidth;
-	int								 mWindowHeight;
 
+    float                            mFPS;
+    float                            mMaxFPS;
+	int                              mWindowWidth;
+	int                              mWindowHeight;
+    std::unique_ptr<b2World>         mPhysicsWorld;
+    b2Vec2                           mGravity;
+    std::vector<Tearsplash::Box>     mPhysicsBoxes;
 };
 
 #endif // !MAINGAME_H

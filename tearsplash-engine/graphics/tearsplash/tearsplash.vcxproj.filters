@@ -63,6 +63,9 @@
     <ClCompile Include="src\Spritefont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Box.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\includes\Errors.h">
@@ -147,6 +150,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dependencies\includes\Tearsplash\Spritefont.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies\includes\Tearsplash\Box.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
