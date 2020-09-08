@@ -48,6 +48,25 @@ void Spritebatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuin
     mGlyphs.emplace_back(destRect, uvRect, texture, depth, color);
 }
 
+void Tearsplash::Spritebatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const ColorRGBA8& color, float radianAngle)
+{
+    mGlyphs.emplace_back(destRect, uvRect, texture, depth, color, radianAngle);
+}
+
+void Tearsplash::Spritebatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, int depth, const ColorRGBA8& color, const glm::vec2& direction)
+{
+    // Standard convention to always point to the right as initial.
+    const glm::vec2 right(1.0f, 0.0);
+
+    // Calculate rotational angle.
+    float radianAngle = glm::acos(glm::dot(right, direction));
+    if (direction.y < 0.0f) {
+        radianAngle = -radianAngle;
+    }
+
+    mGlyphs.emplace_back(destRect, uvRect, texture, depth, color, radianAngle);
+}
+
 void Spritebatch::createVertexArray()
 {
     if (mVAO == 0)
@@ -170,4 +189,12 @@ void Spritebatch::createRenderBatches()
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), &vertices[0]);
     // Unbind buffer
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+glm::vec2 Glyph::rotatePoint(const glm::vec2& point, float radianAngle) const
+{
+    glm::vec2 newPos;
+    newPos.x = point.x * glm::cos(radianAngle) - point.y * glm::sin(radianAngle);
+    newPos.y = point.x * glm::sin(radianAngle) + point.y * glm::cos(radianAngle);
+    return newPos;
 }

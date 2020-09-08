@@ -64,6 +64,8 @@ private:
 	Tearsplash::AudioEngine          mAudioEngine;
     Tearsplash::Spritefont           mHUDText;
     std::vector<Projectile>          mBullets;
+    glm::vec2                        mPlayerPosition;
+    glm::vec2                        mPlayerDirection;
 
 
     float                            mFPS;

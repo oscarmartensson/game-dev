@@ -137,6 +137,10 @@ xcopy "$(ProjectDir)tearsplash\dependencies\\bin\x86\glew32.dll" "$(OutDir)" /Y<
       <AdditionalDependencies>tearsplash.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(ProjectDir)tearsplash\dependencies\bin\x86\SDL2.dll" "$(OutDir)" /Y
+xcopy "$(ProjectDir)tearsplash\dependencies\\bin\x86\glew32.dll" "$(OutDir)" /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

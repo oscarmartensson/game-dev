@@ -28,7 +28,9 @@ MainGame::MainGame() :
     mFPS(0.0f),
     mMaxFPS(60.0f),
 	mWindowWidth(1280), mWindowHeight(720),
-	mGravity(0.0f, -9.82f)
+	mGravity(0.0f, -9.82f),
+    mPlayerPosition(glm::vec2(0.0, 0.0f)),
+    mPlayerDirection(glm::vec2(1.0, 0.0f))
 {
 }
 
@@ -116,6 +118,7 @@ void MainGame::processInput()
 {
     const float SCALE_SPEED = 0.1f;
     const float CAMERA_SPEED = 5.0f;
+    const float PLAYER_SPEED = 5.0f;
 
     mInputManager.update();
 	SDL_Event userInput;
@@ -131,6 +134,9 @@ void MainGame::processInput()
 
 			case SDL_MOUSEMOTION:
                 mInputManager.setMouseCoords(static_cast<float>(userInput.motion.x), static_cast<float>(userInput.motion.y));
+                glm::vec2 mouseCoords = mInputManager.getMouseCoords();
+                mouseCoords = mCamera.convertScreen2World(mouseCoords);
+                mPlayerDirection = glm::normalize(mouseCoords - mPlayerPosition);
                 break;
 
             case SDL_KEYDOWN:
@@ -160,25 +166,32 @@ void MainGame::processInput()
     if (mInputManager.isKeyPressed(SDLK_w))
     {
         // NOTE! Camera is moving down, scene moving up
-        mCamera.setPosition(mCamera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED));
+        //mCamera.setPosition(mCamera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED));
+        mPlayerPosition = mPlayerPosition + glm::vec2(0.0f, PLAYER_SPEED);
     }
 
     if (mInputManager.isKeyPressed(SDLK_s))
     {
         // NOTE! Camera is moving up, scene moving down
-        mCamera.setPosition(mCamera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED));
+        //mCamera.setPosition(mCamera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED));
+
+        mPlayerPosition = mPlayerPosition + glm::vec2(0.0f, -PLAYER_SPEED);
     }
 
     if (mInputManager.isKeyPressed(SDLK_a))
     {
         // NOTE! Camera is moving right, scene moving left
-        mCamera.setPosition(mCamera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f));
+        //mCamera.setPosition(mCamera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f));
+
+        mPlayerPosition = mPlayerPosition + glm::vec2(-PLAYER_SPEED, 0.0f);
     }
 
     if (mInputManager.isKeyPressed(SDLK_d))
     {
         // NOTE! Camera is moving left, scene moving right
-        mCamera.setPosition(mCamera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f));
+        //mCamera.setPosition(mCamera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f));
+
+        mPlayerPosition = mPlayerPosition + glm::vec2(PLAYER_SPEED, 0.0f);
     }
 
     if (mInputManager.isKeyPressed(SDLK_q))
@@ -194,15 +207,8 @@ void MainGame::processInput()
     if (mInputManager.isKeyPressed(SDLK_f))
     {
         glm::vec2 mouseCoords = mInputManager.getMouseCoords();
-        mouseCoords = mCamera.convertScreen2World(mouseCoords);
-        //std::cout << mouseCoords.x << " " << mouseCoords.y << std::endl;
-
-        glm::vec2 playerPosition(0.0f);
-        glm::vec2 direction = mouseCoords - playerPosition;
-        direction = glm::normalize(direction);
-
         // This is really ugly, should not try to load the sound effect every time a bullet is fired.
-        mBullets.emplace_back(playerPosition, direction, 10.0f, 1000, mAudioEngine.loadSoundEffect("sound/shots/pistol.wav"));
+        mBullets.emplace_back(mPlayerPosition, mPlayerDirection, 10.0f, 1000, mAudioEngine.loadSoundEffect("sound/shots/pistol.wav"));
         mBullets.back().playSoundFX();
     }
 }
@@ -232,7 +238,6 @@ void MainGame::render()
     // Start filling sprite batches
     mSpritebatch.begin(Tearsplash::GlyphSortType::TEXTURE);
 
-    glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
     glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
     static Tearsplash::GLTexture playerTexture = Tearsplash::ResourceManager::getTexture("textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
     Tearsplash::ColorRGBA8 color;
@@ -242,7 +247,7 @@ void MainGame::render()
     color.a = 255;
 
     // Draw the player sprite.
-    mSpritebatch.draw(pos, uv, playerTexture.id, 0, color);
+    mSpritebatch.draw(glm::vec4(mPlayerPosition, 50.0, 50.0), uv, playerTexture.id, 0, color, mPlayerDirection);
 
     for (size_t i = 0; i < mBullets.size(); i++)
     {
@@ -327,9 +332,10 @@ void MainGame::createPhysicsObjects()
     box.init(mPhysicsWorld.get(), glm::vec2(0.0f, 100.0f), glm::vec2(15.0f, 15.0f), b2_dynamicBody);
     mPhysicsBoxes.push_back(box);
 }
-
+ 
 void MainGame::updatePhysics()
 {
     // Since we're locking the fps to 60, we'll use that as a timestep.
+    // If the FPS starts lagging behind this won't work very well.
     mPhysicsWorld->Step(1.0f / 60.0f, 6, 2);
 }
