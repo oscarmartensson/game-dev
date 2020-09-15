@@ -4,3 +4,10 @@
 **/output_x86/**
 *.ppm
 *.ppm
+
+tearsplash-engine/graphics/Debug/*
+tearsplash-engine/graphics/Release/*
+tearsplash-engine/graphics/tearsplash/Debug/*
+tearsplash-engine/graphics/tearsplash/Release/*
+tearsplash-engine/graphics/tearsplash/output_x64/*
+tearsplash-engine/graphics/tearsplash/output_x86/*
