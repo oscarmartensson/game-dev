@@ -186,6 +186,8 @@
     <ClCompile Include="src\ImageLoader.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\IOManager.cpp" />
+    <ClCompile Include="src\ParticleBatch2D.cpp" />
+    <ClCompile Include="src\ParticleEngine2D.cpp" />
     <ClCompile Include="src\PicoPNG.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
     <ClCompile Include="src\ShaderProgram.cpp" />
@@ -214,6 +216,9 @@
     <ClInclude Include="dependencies\includes\Tearsplash\ImageLoader.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\InputManager.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\IOManager.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Particle2D.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\ParticleBatch2D.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\ParticleEngine2D.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\PicoPNG.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ResourceManager.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ShaderProgram.h" />
