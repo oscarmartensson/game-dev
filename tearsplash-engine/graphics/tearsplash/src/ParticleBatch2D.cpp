@@ -2,13 +2,19 @@
 
 using namespace Tearsplash;
 
-ParticleBatch2D::ParticleBatch2D(const int numParticles, const float decayRate, Tearsplash::GLTexture& texture) :
-    mDecayRate(decayRate), mMaxParticles(numParticles), mActiveParticleIndex(0), mTexture(texture){
-    mParticles = new Particle2D[mMaxParticles];
+ParticleBatch2D::ParticleBatch2D() :
+    mDecayRate(0), mMaxParticles(0), mActiveParticleIndex(0) {
 }
-
 ParticleBatch2D::~ParticleBatch2D() {
     delete[] mParticles;
+}
+
+void ParticleBatch2D::init(const int numParticles, const float decayRate, Tearsplash::GLTexture& texture) {
+    mDecayRate = decayRate;
+    mMaxParticles = numParticles;
+    mActiveParticleIndex = 0;
+    mTexture = texture;
+    mParticles = new Particle2D[mMaxParticles];
 }
 
 void ParticleBatch2D::addParticle(const glm::vec2& position,
@@ -37,8 +43,8 @@ void ParticleBatch2D::draw(Spritebatch& sb) const {
     glm::vec4 uvRect(0.0f, 0.0f, 1.0f, 1.0f);
     for (int i = 0; i < mMaxParticles; i++) {
         if (mParticles[i].lifeTime > 0.0f) {
-            glm::vec4 destRect(mParticles[i].position, mParticles[i].width, mParticles[i].width);
-            sb.draw(destRect, uvRect, mTexture.id, 0, mParticles[i].color, mParticles[i].velocity);
+            glm::vec4 destRect(mParticles[i].position.x, mParticles[i].position.y, mParticles[i].width, mParticles[i].width);
+            sb.draw(destRect, uvRect, mTexture.id, 0, mParticles[i].color);
         }
     }
 }

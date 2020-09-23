@@ -30,6 +30,7 @@
 #include <Tearsplash/Timing.h>
 #include <Tearsplash/AudioEngine.h>
 #include <Tearsplash/Box.h>
+#include <Tearsplash/ParticleEngine2D.h>
 
 #include "Projectile.h"
 
@@ -51,7 +52,8 @@ private:
 	void render();
 	void printFPS();
     void createPhysicsObjects();
-    void updatePhysics();
+    void updatePhysics(const float timeStep);
+    void initParticleSystem();
 
 	// Member variables
     GameState						 mCurrentGameState;
@@ -59,13 +61,21 @@ private:
     Tearsplash::ShaderProgram		 mColorShaders;
     Tearsplash::Camera2D             mCamera;
     Tearsplash::Spritebatch          mSpritebatch;
+    Tearsplash::Spritebatch          mSpritebatchParticles;
     Tearsplash::InputManager         mInputManager;
     Tearsplash::FPSLimiter           mFPSLimiter;
 	Tearsplash::AudioEngine          mAudioEngine;
     Tearsplash::Spritefont           mHUDText;
+    Tearsplash::ParticleEngine2D     mParticleEngine;
     std::vector<Projectile>          mBullets;
     glm::vec2                        mPlayerPosition;
     glm::vec2                        mPlayerDirection;
+    glm::vec2                        mParticleVelocity;
+    Tearsplash::ColorRGBA8           mParticleColor;
+    Tearsplash::GLTexture            mParticleTexture;
+
+    Tearsplash::ParticleBatch2D      mParticleBatch2D;
+
 
 
     float                            mFPS;
@@ -75,6 +85,7 @@ private:
     std::unique_ptr<b2World>         mPhysicsWorld;
     b2Vec2                           mGravity;
     std::vector<Tearsplash::Box>     mPhysicsBoxes;
+    std::vector<Tearsplash::GLTexture> mTextures;
 };
 
 #endif // !MAINGAME_H

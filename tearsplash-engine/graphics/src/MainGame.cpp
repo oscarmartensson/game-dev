@@ -11,12 +11,17 @@
 /**********************************************************************/
 
 // Includes -------------------------
+#include <ctime>
 #include <string>
 #include <random>
 
 #include <Tearsplash/Errors.h>
 #include <Tearsplash/ImageLoader.h>
 #include <Tearsplash/ResourceManager.h>
+#include <Tearsplash/ParticleBatch2D.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "MainGame.h"
 
@@ -70,6 +75,8 @@ void MainGame::initSystems()
     mHUDText.init("fonts/28_Days_Later.ttf");
 
     createPhysicsObjects();
+
+    initParticleSystem();
 }
 
 // ----------------------------------
@@ -78,7 +85,8 @@ void MainGame::gameLoop()
 {
 	// Keep looping while player hasn't pressed exit
 	while (mCurrentGameState != GameState::EXIT)
-	{
+	{ 
+        float timeStep = 1.0f / 60.0f;
         mFPSLimiter.begin();
 
 		float startTicks = static_cast<float>(SDL_GetTicks());
@@ -100,7 +108,9 @@ void MainGame::gameLoop()
             }
         }
 
-        updatePhysics();
+        mParticleEngine.updateBatches(timeStep);
+
+        updatePhysics(timeStep);
 
         render();
 
@@ -276,6 +286,9 @@ void MainGame::render()
     // Render sprite batches
     mSpritebatch.renderBatch();
 
+    // Draw the particles.
+    mParticleEngine.drawBatches();
+
 	// Stop using shader program
 	mColorShaders.dontuse();
 
@@ -333,9 +346,36 @@ void MainGame::createPhysicsObjects()
     mPhysicsBoxes.push_back(box);
 }
  
-void MainGame::updatePhysics()
+void MainGame::updatePhysics(const float timeStep)
 {
     // Since we're locking the fps to 60, we'll use that as a timestep.
     // If the FPS starts lagging behind this won't work very well.
-    mPhysicsWorld->Step(1.0f / 60.0f, 6, 2);
+    mPhysicsWorld->Step(timeStep, 6, 2);
+}
+
+void MainGame::initParticleSystem() {
+    // Init the spritebatch used for the particles.
+    mSpritebatchParticles.init();
+
+    const int maxParticles = 10;
+    //mParticleTexture = Tearsplash::ResourceManager::getTexture("textures/smoke_07.png");
+    mParticleTexture = Tearsplash::ResourceManager::getTexture("textures/whitePuff02.png");
+    mParticleBatch2D.init(maxParticles, 1.0f, mParticleTexture);
+    // Setup random generator for random angle around 360 deg circle.
+    std::mt19937 mt_rand(std::time(nullptr));
+    std::uniform_real_distribution<float> randAngleCircle(0.0f, 360);
+
+    // Specify velocity and rotate it.
+    mParticleVelocity = glm::vec2(17.0f, 0.0f);
+
+    // Color the particles.
+    mParticleColor.r = 255;
+    mParticleColor.g = 0;
+    mParticleColor.b = 0;
+    mParticleColor.a = 255;
+    for (int i = 0; i < maxParticles; i++) {
+        mParticleBatch2D.addParticle(glm::vec2(-100.0f, 0.0f), glm::rotate(mParticleVelocity, randAngleCircle(mt_rand)), mParticleColor, 5.0f, 1.0f);
+    }
+
+    mParticleEngine.addParticleBatch(mParticleBatch2D, mSpritebatchParticles);
 }

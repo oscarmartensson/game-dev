@@ -9,10 +9,10 @@ namespace Tearsplash {
 
     class ParticleBatch2D {
     public:
-        ParticleBatch2D() = delete;
-        ParticleBatch2D(const int numParticles, const float decayRate, Tearsplash::GLTexture& texture);
+        ParticleBatch2D();
         ~ParticleBatch2D();
 
+        void init(const int numParticles, const float decayRate, Tearsplash::GLTexture& texture);
         void addParticle(const glm::vec2& position,
                          const glm::vec2& velocity,
                          ColorRGBA8& color,

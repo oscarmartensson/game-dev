@@ -2,7 +2,12 @@
 
 using namespace Tearsplash;
 
-void ParticleEngine2D::addParticleBatch(const int numParticles, const float decayRate, Tearsplash::GLTexture& texture) {
+
+ParticleEngine2D::ParticleEngine2D() {
+    // Do nothing.
+}
+
+ParticleEngine2D::~ParticleEngine2D() {
     // Do nothing.
 }
 
@@ -19,6 +24,9 @@ void ParticleEngine2D::updateBatches(const float deltaTime) {
 void ParticleEngine2D::drawBatches() const {
     for (auto& batch : mBatches) {
         // Draw the ParitcleBatch2D with the Spritebatch it was assigned.
+        batch.second.begin(Tearsplash::GlyphSortType::TEXTURE);
         batch.first.draw(batch.second);
+        batch.second.end();
+        batch.second.renderBatch();
     }
 }

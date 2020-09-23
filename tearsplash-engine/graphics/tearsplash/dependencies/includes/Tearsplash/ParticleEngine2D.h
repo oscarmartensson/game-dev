@@ -11,7 +11,6 @@ namespace Tearsplash {
         ParticleEngine2D();
         ~ParticleEngine2D();
 
-        void addParticleBatch(const int numParticles, const float decayRate, Tearsplash::GLTexture& texture);
         void addParticleBatch(Tearsplash::ParticleBatch2D& pb, Spritebatch& sb);
         void updateBatches(const float deltaTime);
         void drawBatches() const;

@@ -186,6 +186,7 @@
     <ClCompile Include="src\ImageLoader.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\IOManager.cpp" />
+    <ClCompile Include="src\Particle2D.cpp" />
     <ClCompile Include="src\ParticleBatch2D.cpp" />
     <ClCompile Include="src\ParticleEngine2D.cpp" />
     <ClCompile Include="src\PicoPNG.cpp" />
