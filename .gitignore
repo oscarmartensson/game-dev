@@ -11,3 +11,11 @@ tearsplash-engine/graphics/tearsplash/Debug/*
 tearsplash-engine/graphics/tearsplash/Release/*
 tearsplash-engine/graphics/tearsplash/output_x64/*
 tearsplash-engine/graphics/tearsplash/output_x86/*
+
+tutorials/Vulkan-tutorial/Vulkan-dev/x64/Debug/
+tutorials/Vulkan-tutorial/Vulkan-dev/x64/Release/
+
+tutorials/blender-donut/*cache*/
+*.vdb
+*.uni
+*.blend1
