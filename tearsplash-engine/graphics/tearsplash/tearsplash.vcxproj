@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)tearsplash/dependencies/includes/;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)tearsplash/dependencies/includes/freetype;</IncludePath>
+    <IncludePath>$(SolutionDir)tearsplash/dependencies/includes/;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)tearsplash/dependencies/includes/freetype;$(SolutionDir)tearsplash/dependencies/includes/imgui</IncludePath>
     <LibraryPath>$(SolutionDir)tearsplash/dependencies/libs/x86/Debug;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <SourcePath>$(SolutionDir)tearsplash/src/;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)tearsplash/dependencies/includes/;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(SolutionDir)tearsplash/dependencies/includes/;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)tearsplash/dependencies/includes/imgui</IncludePath>
     <LibraryPath>$(SolutionDir)tearsplash/dependencies/libs/x86/Release;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
     <SourcePath>$(SolutionDir)tearsplash/src/;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
@@ -107,7 +107,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>box2d.lib;opengl32.lib;glew32.lib;SDL2.lib;SDL2main.lib;SDL2_mixer.lib;freetype.lib;</AdditionalDependencies>
+      <AdditionalDependencies>box2d.lib;opengl32.lib;glew32.lib;SDL2d.lib;SDL2maind.lib;SDL2_mixer.lib;freetype.lib;</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>
@@ -182,8 +182,12 @@
     <ClCompile Include="src\AudioEngine.cpp" />
     <ClCompile Include="src\Box.cpp" />
     <ClCompile Include="src\Camera2D.cpp" />
+    <ClCompile Include="src\Capsule.cpp" />
     <ClCompile Include="src\Errors.cpp" />
     <ClCompile Include="src\ImageLoader.cpp" />
+    <ClCompile Include="src\imgui.cpp" />
+    <ClCompile Include="src\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\imgui_impl_sdl.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\IOManager.cpp" />
     <ClCompile Include="src\Particle2D.cpp" />
@@ -204,6 +208,12 @@
     <ClInclude Include="dependencies\includes\Errors.h" />
     <ClInclude Include="dependencies\includes\GLTexture.h" />
     <ClInclude Include="dependencies\includes\ImageLoader.h" />
+    <ClInclude Include="dependencies\includes\imgui\imconfig.h" />
+    <ClInclude Include="dependencies\includes\imgui\imgui.h" />
+    <ClInclude Include="dependencies\includes\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="dependencies\includes\imgui\imgui_impl_sdl.h" />
+    <ClInclude Include="dependencies\includes\imgui\imgui_internal.h" />
+    <ClInclude Include="dependencies\includes\imgui\imstb_textedit.h" />
     <ClInclude Include="dependencies\includes\IOManager.h" />
     <ClInclude Include="dependencies\includes\PicoPNG.h" />
     <ClInclude Include="dependencies\includes\ResourceManager.h" />
@@ -212,6 +222,7 @@
     <ClInclude Include="dependencies\includes\Tearsplash\AudioEngine.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Box.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Camera2D.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\Capsule.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Errors.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\GLTexture.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\ImageLoader.h" />
@@ -228,6 +239,7 @@
     <ClInclude Include="dependencies\includes\Tearsplash\Spritefont.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Tearsplash.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\TextureCache.h" />
+    <ClInclude Include="dependencies\includes\Tearsplash\TileSheet.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Timing.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Vertex.h" />
     <ClInclude Include="dependencies\includes\Tearsplash\Window.h" />
