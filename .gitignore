@@ -12,10 +12,11 @@ tearsplash-engine/graphics/tearsplash/Release/*
 tearsplash-engine/graphics/tearsplash/output_x64/*
 tearsplash-engine/graphics/tearsplash/output_x86/*
 
-tutorials/Vulkan-tutorial/Vulkan-dev/x64/Debug/
-tutorials/Vulkan-tutorial/Vulkan-dev/x64/Release/
+tutorials/Vulkan-tutorial/Vulkan-dev/x64/Release/*
+tutorials/Vulkan-tutorial/Vulkan-dev/x64/Debug/*
 
 tutorials/blender-donut/*cache*/
 *.vdb
 *.uni
 *.blend1
+tutorials/Vulkan-tutorial/Vulkan-dev/Vulkan-dev/x64/Debug/vc142.pdb
