@@ -20,9 +20,19 @@ namespace Tearsplash
 		int getScreenWidth() { return mWindowWidth; }
 		int getScreenHeight() { return mWindowHeight; }
 		void swapBuffer();
+    SDL_Window* getSDLWindow() {
+      return mSDLWindow;
+    }
+
+    SDL_GLContext getGLContext() {
+      return mGLContext;
+    }
+
+
 
 	private:
-		SDL_Window* mSDLWndow;
+		SDL_Window* mSDLWindow;
+    SDL_GLContext mGLContext;
 		int mWindowWidth;
 		int mWindowHeight;
 
