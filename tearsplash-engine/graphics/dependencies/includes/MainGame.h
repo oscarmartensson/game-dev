@@ -7,15 +7,15 @@
 #if defined( _WIN32) || defined(_WIN64)
 // Include for windows if target is windows
 #include <Windows.h>
-#endif //  _WIN32
+#endif // _WIN32
 
 // STL includes
 #include <vector>
 #include <iostream>
 
-#include <SDL/SDL.h>	// Used for window and input
+#include <SDL/SDL.h>  // Used for window and input
 
-#include <GL/glew.h>	// Used for OpenGL
+#include <GL/glew.h>  // Used for OpenGL
 #include <Box2D/Box2D.h>
 
 // Tearsplash engine
@@ -39,32 +39,32 @@ enum class GameState { PLAY, EXIT };
 class MainGame
 {
 public:
-	MainGame();
-	~MainGame();
-	void run();
+    MainGame();
+    ~MainGame();
+    void run();
 
 private:
-	// Functions
-	void initSystems();
-	void initShaders();
-	void gameLoop();
-	void processInput();
-	void render();
-	void printFPS();
+    // Functions
+    void initSystems();
+    void initShaders();
+    void gameLoop();
+    void processInput();
+    void render();
+    void printFPS();
     void createPhysicsObjects();
     void updatePhysics(const float timeStep);
     void initParticleSystem();
 
-	// Member variables
-    GameState						 mCurrentGameState;
-	Tearsplash::Window				 mWindow;
-    Tearsplash::ShaderProgram		 mColorShaders;
+    // Member variables
+    GameState                        mCurrentGameState;
+    Tearsplash::Window               mWindow;
+    Tearsplash::ShaderProgram        mColorShaders;
     Tearsplash::Camera2D             mCamera;
     Tearsplash::Spritebatch          mSpritebatch;
     Tearsplash::Spritebatch          mSpritebatchParticles;
     Tearsplash::InputManager         mInputManager;
     Tearsplash::FPSLimiter           mFPSLimiter;
-	Tearsplash::AudioEngine          mAudioEngine;
+    Tearsplash::AudioEngine          mAudioEngine;
     Tearsplash::Spritefont           mHUDText;
     Tearsplash::ParticleEngine2D     mParticleEngine;
     std::vector<Projectile>          mBullets;
@@ -78,16 +78,14 @@ private:
 
 
 
-    float                            mFPS;
-    float                            mMaxFPS;
-	int                              mWindowWidth;
-	int                              mWindowHeight;
-    std::unique_ptr<b2World>         mPhysicsWorld;
-    b2Vec2                           mGravity;
-    std::vector<Tearsplash::Box>     mPhysicsBoxes;
+    float                              mFPS;
+    float                              mMaxFPS;
+    int                                mWindowWidth;
+    int                                mWindowHeight;
+    std::unique_ptr<b2World>           mPhysicsWorld;
+    b2Vec2                             mGravity;
+    std::vector<Tearsplash::Box>       mPhysicsBoxes;
     std::vector<Tearsplash::GLTexture> mTextures;
 };
 
 #endif // !MAINGAME_H
-
-
