@@ -63,7 +63,7 @@ void MainGame::initSystems()
 
     mFPSLimiter.init(mMaxFPS);
 
-    mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, Tearsplash::WindowFlags::FULLSCREEN);
     mCamera.init(mWindowWidth, mWindowHeight);
     mCamera.setScale(2.0f);
 

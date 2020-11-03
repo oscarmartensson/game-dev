@@ -26,20 +26,25 @@ int Window::createWindow(std::string windowName, int screenWidth, int screenHeig
 	Uint32 flags = SDL_WINDOW_OPENGL;
 	if (currentFlags & INVISIBLE)
 	{
-		currentFlags |= SDL_WINDOW_HIDDEN;
+    flags |= SDL_WINDOW_HIDDEN;
 	}
 	else if (currentFlags & FULLSCREEN)
 	{
-		currentFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 	else if (currentFlags & BORDERLESS)
 	{
-		currentFlags |= SDL_WINDOW_BORDERLESS;
+    flags |= SDL_WINDOW_BORDERLESS;
 	}
 
+  // Set flags for context. Create core context profile.
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
 	// Create window
-	mSDLWndow = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, flags);
-	if (mSDLWndow == nullptr)
+	mSDLWindow = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, flags);
+	if (mSDLWindow == nullptr)
 	{
 		fatalError("SDL window could not be created");
 	}
@@ -49,11 +54,12 @@ int Window::createWindow(std::string windowName, int screenWidth, int screenHeig
 	mWindowWidth = screenWidth;
 
 	// Init GL
-	SDL_GLContext glContext = SDL_GL_CreateContext(mSDLWndow);
-	if (glContext == nullptr)
+	mGLContext = SDL_GL_CreateContext(mSDLWindow);
+	if (mGLContext == nullptr)
 	{
 		fatalError("SDL_GL context could not be created");
 	}
+  SDL_GL_MakeCurrent(mSDLWindow, mGLContext);
 
 	// Init glew
 #ifdef DEBUG
@@ -84,5 +90,5 @@ int Window::createWindow(std::string windowName, int screenWidth, int screenHeig
 void Window::swapBuffer()
 {
 	// Swap render buffer
-	SDL_GL_SwapWindow(mSDLWndow);
+	SDL_GL_SwapWindow(mSDLWindow);
 }
