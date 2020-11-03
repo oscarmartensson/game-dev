@@ -29,15 +29,13 @@
 // ----------------------------------
 // Default constructor
 MainGame::MainGame() : 
-	mCurrentGameState(GameState::PLAY),
+    mCurrentGameState(GameState::PLAY),
     mFPS(0.0f),
     mMaxFPS(60.0f),
-	mWindowWidth(1280), mWindowHeight(720),
-	mGravity(0.0f, -9.82f),
+    mWindowWidth(1280), mWindowHeight(720),
+    mGravity(0.0f, -9.82f),
     mPlayerPosition(glm::vec2(0.0, 0.0f)),
-    mPlayerDirection(glm::vec2(1.0, 0.0f))
-{
-}
+    mPlayerDirection(glm::vec2(1.0, 0.0f)) {}
 
 // ----------------------------------
 // Default destructor
@@ -50,9 +48,9 @@ MainGame::~MainGame()
 // Runs the game
 void MainGame::run()
 {
-	initSystems();
+    initSystems();
 
-	gameLoop();
+    gameLoop();
 }
 
 // ----------------------------------
@@ -60,16 +58,16 @@ void MainGame::run()
 // etc.
 void MainGame::initSystems()
 {
-	Tearsplash::init();
+    Tearsplash::init();
     mAudioEngine.init();
 
     mFPSLimiter.init(mMaxFPS);
 
-	mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, SDL_WINDOW_FULLSCREEN_DESKTOP);
     mCamera.init(mWindowWidth, mWindowHeight);
     mCamera.setScale(2.0f);
 
-	initShaders();
+    initShaders();
     mSpritebatch.init();
 
     mHUDText.init("fonts/28_Days_Later.ttf");
@@ -83,14 +81,14 @@ void MainGame::initSystems()
 // Main game loop.
 void MainGame::gameLoop()
 {
-	// Keep looping while player hasn't pressed exit
-	while (mCurrentGameState != GameState::EXIT)
-	{ 
+    // Keep looping while player hasn't pressed exit
+    while (mCurrentGameState != GameState::EXIT)
+    { 
         float timeStep = 1.0f / 60.0f;
         mFPSLimiter.begin();
 
-		float startTicks = static_cast<float>(SDL_GetTicks());
-		processInput();
+        float startTicks = static_cast<float>(SDL_GetTicks());
+        processInput();
 
         mCamera.update();
 
@@ -117,9 +115,9 @@ void MainGame::gameLoop()
         mFPS = mFPSLimiter.end();
 
         printFPS();
-	}
+    }
 
-	return;
+    return;
 }
 
 // ----------------------------------
@@ -131,18 +129,18 @@ void MainGame::processInput()
     const float PLAYER_SPEED = 5.0f;
 
     mInputManager.update();
-	SDL_Event userInput;
+    SDL_Event userInput;
 
-	while (SDL_PollEvent(&userInput) == 1)
-	{
-		// There is a user input present
-		switch (userInput.type)
-		{
-			case SDL_QUIT:
-				mCurrentGameState = GameState::EXIT;
-				break;
+    while (SDL_PollEvent(&userInput) == 1)
+    {
+        // There is a user input present
+        switch (userInput.type)
+        {
+            case SDL_QUIT:
+                mCurrentGameState = GameState::EXIT;
+                break;
 
-			case SDL_MOUSEMOTION:
+            case SDL_MOUSEMOTION:
                 mInputManager.setMouseCoords(static_cast<float>(userInput.motion.x), static_cast<float>(userInput.motion.y));
                 glm::vec2 mouseCoords = mInputManager.getMouseCoords();
                 mouseCoords = mCamera.convertScreen2World(mouseCoords);
@@ -165,11 +163,11 @@ void MainGame::processInput()
                 mInputManager.releaseKey(userInput.button.button);
                 break;
 
-			default:
-				// Do nothing
-				break;
-		}
-	}
+            default:
+                // Do nothing
+                break;
+        }
+    }
 
     // Check for key pressed in input manager and add action
 
@@ -227,13 +225,13 @@ void MainGame::processInput()
 // Rendering main function
 void MainGame::render()
 {
-	// Prepare for rendering
-	glClearDepth(1.0f);									// Clear depth to 1
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear color buffer and depth buffer between draws
+    // Prepare for rendering
+    glClearDepth(1.0f); // Clear depth to 1
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear color buffer and depth buffer between draws
 
-	// Use shader program and set first texture (0)
-	mColorShaders.use();
-	glActiveTexture(GL_TEXTURE0);
+    // Use shader program and set first texture (0)
+    mColorShaders.use();
+    glActiveTexture(GL_TEXTURE0);
 
   
     // Set uniforms
@@ -244,7 +242,7 @@ void MainGame::render()
     GLint pLocation = mColorShaders.getUniformLocation("P");
     glm::mat4 cameraMatrix = mCamera.getCameraMatrix();
     glUniformMatrix4fv(pLocation, 1, GL_FALSE, &(cameraMatrix[0][0]));
-	
+
     // Start filling sprite batches
     mSpritebatch.begin(Tearsplash::GlyphSortType::TEXTURE);
 
@@ -289,44 +287,44 @@ void MainGame::render()
     // Draw the particles.
     mParticleEngine.drawBatches();
 
-	// Stop using shader program
-	mColorShaders.dontuse();
+    // Stop using shader program
+    mColorShaders.dontuse();
 
     // Render Text
     mHUDText.drawText("hejsan sa", glm::vec4(100.0f, 0.0f, 0.0f, 0.0f), cameraMatrix, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     mHUDText.render();
 
-	mWindow.swapBuffer();
+    mWindow.swapBuffer();
 }
 
 // ----------------------------------
 // Initializes shaders
 void MainGame::initShaders()
 {
-	mColorShaders.compileShaders("shaders/colorShading.vert", "shaders/colorShading.frag");
+    mColorShaders.compileShaders("shaders/colorShading.vert", "shaders/colorShading.frag");
 
-	// Setup attribute pointers
-	mColorShaders.addAttribute("vertexPosition");
-	mColorShaders.addAttribute("vertexColor");
-	mColorShaders.addAttribute("vertexUV");
+    // Setup attribute pointers
+    mColorShaders.addAttribute("vertexPosition");
+    mColorShaders.addAttribute("vertexColor");
+    mColorShaders.addAttribute("vertexUV");
 
-	mColorShaders.linkShaders();
+    mColorShaders.linkShaders();
 }
 
 // ----------------------------------
 // Prints fps each 10 frames
 void MainGame::printFPS()
 {
-	static int frameCounter = 0;
+    static int frameCounter = 0;
 
-	frameCounter++;
+    frameCounter++;
 
-	// Print each 10th frame
-	if (frameCounter == 100)
-	{
-		std::cout << "fps: " << mFPS << std::endl;
-		frameCounter = 0;
-	}
+    // Print each 10th frame
+    if (frameCounter == 100)
+    {
+        std::cout << "fps: " << mFPS << std::endl;
+        frameCounter = 0;
+    }
 }
 
 void MainGame::createPhysicsObjects()
@@ -357,7 +355,7 @@ void MainGame::initParticleSystem() {
     // Init the spritebatch used for the particles.
     mSpritebatchParticles.init();
 
-    const int maxParticles = 10;
+    const int maxParticles = 1000;
     //mParticleTexture = Tearsplash::ResourceManager::getTexture("textures/smoke_07.png");
     mParticleTexture = Tearsplash::ResourceManager::getTexture("textures/whitePuff02.png");
     mParticleBatch2D.init(maxParticles, 1.0f, mParticleTexture);
