@@ -186,8 +186,10 @@
     <ClCompile Include="src\Errors.cpp" />
     <ClCompile Include="src\ImageLoader.cpp" />
     <ClCompile Include="src\imgui.cpp" />
+    <ClCompile Include="src\imgui_draw.cpp" />
     <ClCompile Include="src\imgui_impl_opengl3.cpp" />
     <ClCompile Include="src\imgui_impl_sdl.cpp" />
+    <ClCompile Include="src\imgui_widgets.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\IOManager.cpp" />
     <ClCompile Include="src\Particle2D.cpp" />
@@ -213,7 +215,9 @@
     <ClInclude Include="dependencies\includes\imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="dependencies\includes\imgui\imgui_impl_sdl.h" />
     <ClInclude Include="dependencies\includes\imgui\imgui_internal.h" />
+    <ClInclude Include="dependencies\includes\imgui\imstb_rectpack.h" />
     <ClInclude Include="dependencies\includes\imgui\imstb_textedit.h" />
+    <ClInclude Include="dependencies\includes\imgui\imstb_truetype.h" />
     <ClInclude Include="dependencies\includes\IOManager.h" />
     <ClInclude Include="dependencies\includes\PicoPNG.h" />
     <ClInclude Include="dependencies\includes\ResourceManager.h" />
@@ -245,6 +249,9 @@
     <ClInclude Include="dependencies\includes\Tearsplash\Window.h" />
     <ClInclude Include="dependencies\includes\TextureCache.h" />
     <ClInclude Include="dependencies\includes\Vertex.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\2DText.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
