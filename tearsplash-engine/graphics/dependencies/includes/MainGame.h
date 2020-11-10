@@ -54,6 +54,8 @@ private:
     void createPhysicsObjects();
     void updatePhysics(const float timeStep);
     void initParticleSystem();
+    void initImGui();
+    void shutdownImGui();
 
     // Member variables
     GameState                        mCurrentGameState;

@@ -23,8 +23,11 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "MainGame.h"
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_sdl.h>
 
+#include "MainGame.h"
 
 // ----------------------------------
 // Default constructor
@@ -75,6 +78,8 @@ void MainGame::initSystems()
     createPhysicsObjects();
 
     initParticleSystem();
+
+    initImGui();
 }
 
 // ----------------------------------
@@ -91,6 +96,20 @@ void MainGame::gameLoop()
         processInput();
 
         mCamera.update();
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(mWindow.getSDLWindow());
+        ImGui::NewFrame();
+
+        ImGui::Begin("Spawn box");
+        if (ImGui::Button("Button")) {
+          // Create a bunch of falling boxes.
+          Tearsplash::Box box;
+          box.init(mPhysicsWorld.get(), glm::vec2(0.0f, 100.0f), glm::vec2(15.0f, 15.0f), b2_dynamicBody);
+          mPhysicsBoxes.push_back(box);
+        }
+        ImGui::End();
 
         // Update all bullets
         for (size_t i = 0; i < mBullets.size();)
@@ -117,6 +136,8 @@ void MainGame::gameLoop()
         printFPS();
     }
 
+    shutdownImGui();
+
     return;
 }
 
@@ -133,6 +154,7 @@ void MainGame::processInput()
 
     while (SDL_PollEvent(&userInput) == 1)
     {
+        ImGui_ImplSDL2_ProcessEvent(&userInput);
         // There is a user input present
         switch (userInput.type)
         {
@@ -294,6 +316,9 @@ void MainGame::render()
     mHUDText.drawText("hejsan sa", glm::vec4(100.0f, 0.0f, 0.0f, 0.0f), cameraMatrix, glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     mHUDText.render();
 
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     mWindow.swapBuffer();
 }
 
@@ -376,4 +401,23 @@ void MainGame::initParticleSystem() {
     }
 
     mParticleEngine.addParticleBatch(mParticleBatch2D, mSpritebatchParticles);
+}
+
+void MainGame::initImGui() {
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+
+  // Setup Platform/Renderer bindings
+  ImGui_ImplSDL2_InitForOpenGL(mWindow.getSDLWindow(), mWindow.getGLContext());
+  ImGui_ImplOpenGL3_Init(mWindow.getGLSLVersion());
+}
+
+void MainGame::shutdownImGui() {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
 }

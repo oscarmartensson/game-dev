@@ -17,25 +17,27 @@ namespace Tearsplash
 		~Window();
 
 		int createWindow(std::string windowName, int windowWidth, int windowHeight, unsigned int currentFlags);
-		int getScreenWidth() { return mWindowWidth; }
-		int getScreenHeight() { return mWindowHeight; }
+		int getScreenWidth() const { return mWindowWidth; }
+		int getScreenHeight() const { return mWindowHeight; }
 		void swapBuffer();
     SDL_Window* getSDLWindow() {
       return mSDLWindow;
     }
 
-    SDL_GLContext getGLContext() {
+    SDL_GLContext getGLContext() const {
       return mGLContext;
     }
 
-
+    const char* getGLSLVersion() const {
+      return mGLSLVersion;
+    }
 
 	private:
 		SDL_Window* mSDLWindow;
     SDL_GLContext mGLContext;
 		int mWindowWidth;
 		int mWindowHeight;
-
+    const char* mGLSLVersion = "#version 460";
 	};
 
 }
