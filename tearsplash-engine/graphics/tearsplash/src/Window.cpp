@@ -36,6 +36,10 @@ int Window::createWindow(std::string windowName, int screenWidth, int screenHeig
 	{
     flags |= SDL_WINDOW_BORDERLESS;
 	}
+  else if (currentFlags & RESIZABLE)
+  {
+    flags |= SDL_WINDOW_RESIZABLE;
+  }
 
   // Set flags for context. Create core context profile.
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

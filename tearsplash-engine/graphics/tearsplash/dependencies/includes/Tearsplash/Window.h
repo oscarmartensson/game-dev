@@ -8,7 +8,7 @@
 namespace Tearsplash
 {
 
-	enum WindowFlags { INVISIBLE = 0x1, FULLSCREEN = 0x2, BORDERLESS = 0x4 };
+	enum WindowFlags { INVISIBLE = 0x1, FULLSCREEN = 0x2, BORDERLESS = 0x4, RESIZABLE = 0x8};
 
 	class Window
 	{

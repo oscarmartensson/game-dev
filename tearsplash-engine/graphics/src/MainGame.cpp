@@ -66,7 +66,7 @@ void MainGame::initSystems()
 
     mFPSLimiter.init(mMaxFPS);
 
-    mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, Tearsplash::WindowFlags::FULLSCREEN);
+    mWindow.createWindow("Tearsplash", mWindowWidth, mWindowHeight, Tearsplash::WindowFlags::RESIZABLE);
     mCamera.init(mWindowWidth, mWindowHeight);
     mCamera.setScale(2.0f);
 
