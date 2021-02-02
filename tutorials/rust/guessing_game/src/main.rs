@@ -1,13 +1,36 @@
 use std::io;
+use std::cmp::Ordering;
+use rand::Rng;
 
 fn main() {
-    println!("Input a number between 0-100:");
 
-    let mut guess = String::new();
+    let secret_number = rand::thread_rng().gen_range(1, 101);
 
-    io::stdin()
-        .read_line(&mut guess)
-        .expect("Failed to read line!");
+    println!("The secret number is {}!", secret_number);
 
-    println!("You guessed: {}", guess);
+    loop {
+        println!("Input a number between 0-100:");
+        let mut guess = String::new();
+
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line!");
+
+        // trim() removes the newline character \n at the end of the variable.
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+        println!("You guessed: {}", guess);
+
+        match guess.cmp(&secret_number) {
+            Ordering::Greater => println!("Too big."),
+            Ordering::Equal => {
+                println!("You guessed correct!");
+                break;
+            },
+            Ordering::Less => println!("Too small."),
+        }
+    }   
 }
